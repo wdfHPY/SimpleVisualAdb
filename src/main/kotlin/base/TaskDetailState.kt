@@ -1,4 +1,4 @@
-package Base
+package base
 
 data class TaskDetailState(
     val state: Boolean,

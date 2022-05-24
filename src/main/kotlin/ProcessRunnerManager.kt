@@ -13,26 +13,29 @@ object ProcessRunnerManager {
 
     var isRunningTask: Boolean = false
 
-    var process: Process? = null
+    private var process: Process? = null
 
     private val scope = CoroutineScope(Dispatchers.Default + SupervisorJob())
 
-    val multiTaskFlow: Flow<Map<String, List<String>>> = emptyFlow()
+    private val _multiTaskFlow: MutableStateFlow<Map<String, List<String>>> =  MutableStateFlow(emptyMap())
 
-    fun startAutoEndProcess() {
-        process = Runtime.getRuntime().exec("adb shell ls /sdcard/")
-        checkIfExceedTime()
+    val multiTaskFlow: StateFlow<Map<String, List<String>>> get() = _multiTaskFlow
+
+    fun startAutoEndProcess(
+        command: String
+    ) {
+        process = Runtime.getRuntime().exec(command)
+        checkIfExceedTime(command)
     }
 
-    private fun checkIfExceedTime() {
+    private fun checkIfExceedTime(
+        command: String
+    ) {
         runBlocking {
             try {
                 isRunningTask = true
                 withTimeout(ProcessRunnerLimit) {
                     while(process?.isAlive == true) {
-                        process?.inputStream?.linesToFlow().let {
-
-                        }
                         delay(500L)
                     }
                     println("5s 内运行结束")
@@ -51,9 +54,9 @@ object ProcessRunnerManager {
 
 fun main() {
     runBlocking {
-        ProcessRunnerManager.startAutoEndProcess()
+//        ProcessRunnerManager.startAutoEndProcess()
     }
 
 }
 
-fun InputStream.linesToFlow() = bufferedReader().lineSequence().asFlow().flowOn(Dispatchers.IO)
+fun InputStream.linesToFlow() = bufferedReader().lineSequence().toList()

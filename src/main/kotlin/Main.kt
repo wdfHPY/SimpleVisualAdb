@@ -4,13 +4,11 @@ import androidx.compose.desktop.ui.tooling.preview.Preview
 import androidx.compose.foundation.layout.Column
 import androidx.compose.material.Button
 import androidx.compose.material.Text
-import androidx.compose.runtime.Composable
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
+import androidx.compose.runtime.*
 import androidx.compose.ui.window.Window
 import androidx.compose.ui.window.application
+import kotlinx.coroutines.GlobalScope
+import kotlinx.coroutines.launch
 
 @Composable
 @Preview
@@ -23,14 +21,16 @@ fun App() {
 
             Button(onClick = {
                 println("点击开始")
-//                ScreenRecordManager.startScreenRecord()
+                ScreenRecord.startScreenRecordByUi()
             }) {
                 Text("开始录像")
             }
 
             Button(onClick = {
-                println("点击结束")
-//                ScreenRecordManager.stopScreenRecord()
+                GlobalScope.launch {
+                    println("点击结束")
+                    ScreenRecord.stopScreenRecordByUi()
+                }
             }) {
                 Text("结束录像")
             }

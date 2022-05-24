@@ -4,7 +4,11 @@ import kotlinx.coroutines.runBlocking
 import mu.KotlinLogging
 import org.jetbrains.annotations.TestOnly
 
-object ScreenRecordKt {
+/**
+ * 现在出现一个问题，如果是在黑屏的情况下，录屏功能使用不了。
+ * 后面可能在录屏开始之前需要点亮屏幕。
+ */
+object ScreenRecord {
 
     private val logger = KotlinLogging.logger {}
 
@@ -12,6 +16,7 @@ object ScreenRecordKt {
 
     private var ifScreenRecording: Boolean = false
 
+    //这里需要作为Ui的状态来显示出来。
     val isScreenRecording get() = ifScreenRecording
 
     private fun startScreenRecord(
@@ -43,11 +48,12 @@ object ScreenRecordKt {
         }
     }
 
-    fun stopScreenRecordByUi() {
+    suspend fun stopScreenRecordByUi() {
         stopScreenRecord().onSuccess {
             logger.info { "stopScreenRecord onSuccess" }
             screenRecordProcess = null
             ifScreenRecording = false
+            delay(500L)
             pullFileToDevice()
         }.onFailure { throwable ->
             logger.error(throwable) { "stopScreenRecord onFailure" }
@@ -55,7 +61,7 @@ object ScreenRecordKt {
     }
 
     private fun pullFileToDevice() {
-        while (screenRecordProcess == null || screenRecordProcess?.isAlive == false) {
+        if (screenRecordProcess == null || screenRecordProcess?.isAlive == false) {
             logger.info { "start pullFileToDevice" }
             AdbExecuteImpl.pullDeviceFile(from = "/sdcard/emo.mp4", to = ".")
         }
@@ -67,9 +73,9 @@ object ScreenRecordKt {
 fun main() {
 //    val o = ScreenRecordKt()
     runBlocking {
-        ScreenRecordKt.startScreenRecordByUi()
+        ScreenRecord.startScreenRecordByUi()
         delay(20 * 1000L)
-        ScreenRecordKt.stopScreenRecordByUi()
+        ScreenRecord.stopScreenRecordByUi()
 //        ScreenRecordKt.pullFileToDevice()
     }
 }

@@ -1,13 +1,18 @@
 import base.impl.AdbExecuteImpl
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.runBlocking
+import mu.KotlinLogging
 import org.jetbrains.annotations.TestOnly
 
 object ScreenRecordKt {
 
-    const val LTag = "ScreenRecordKt"
+    private val logger = KotlinLogging.logger {}
 
     private var screenRecordProcess: Process? = null
+
+    private var ifScreenRecording: Boolean = false
+
+    val isScreenRecording get() = ifScreenRecording
 
     private fun startScreenRecord(
         fileName: String
@@ -15,38 +20,44 @@ object ScreenRecordKt {
         Runtime.getRuntime().exec("adb shell screenrecord /sdcard/${fileName}.mp4")
     }
 
+    private fun stopScreenRecord() = runCatching {
+        screenRecordProcess?.destroyForcibly()
+    }
+
+    /**
+     * 屏幕点击开始录像。
+     * @param fileName 等待保存的文件名称。
+     */
     fun startScreenRecordByUi(
         fileName: String = "emo"
     ) {
         startScreenRecord(fileName).onSuccess {
             screenRecordProcess = it
-        }.onFailure {
-            println("$LTag startScreenRecordByUi onFailure")
+            ifScreenRecording = true
+        }.onFailure { throwable ->
+            logger.error(throwable) { "startScreenRecord onFailure" }
         }.onSuccess {
-            println("$LTag startScreenRecordByUi onSuccess")
+            logger.info {
+                "startScreenRecord onSuccess"
+            }
         }
     }
 
-    private suspend fun stopScreenRecord() = runCatching {
-        screenRecordProcess?.destroyForcibly()
-    }
-
-    suspend fun stopScreenRecordByUi() {
+    fun stopScreenRecordByUi() {
         stopScreenRecord().onSuccess {
+            logger.info { "stopScreenRecord onSuccess" }
             screenRecordProcess = null
+            ifScreenRecording = false
             pullFileToDevice()
-        }.onFailure {
-            println(it.toString())
-            println("$LTag stopScreenRecordByUi onFailure ${it.message} ${it.stackTrace}")
+        }.onFailure { throwable ->
+            logger.error(throwable) { "stopScreenRecord onFailure" }
         }
     }
 
     private fun pullFileToDevice() {
         while (screenRecordProcess == null || screenRecordProcess?.isAlive == false) {
-            println("pullFileToDevice")
-            AdbExecuteImpl.pullDeviceFile(
-                from = "/sdcard/emo.mp4", to = "."
-            )
+            logger.info { "start pullFileToDevice" }
+            AdbExecuteImpl.pullDeviceFile(from = "/sdcard/emo.mp4", to = ".")
         }
     }
 

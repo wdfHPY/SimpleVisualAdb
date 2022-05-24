@@ -5,8 +5,10 @@ import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
 object Dependencies {
     private const val kotlinFlowCode = ""
     private const val kotlinCoroutineCode= "1.6.1"
+    private const val loggerCode= "2.0.11"
     const val kotlinFlow = "$kotlinFlowCode"
     const val kotlinCoroutine = "org.jetbrains.kotlinx:kotlinx-coroutines-core:$kotlinCoroutineCode"
+    const val logger = "io.github.microutils:kotlin-logging-jvm:$loggerCode"
 }
 
 plugins {
@@ -24,9 +26,21 @@ repositories {
 }
 
 dependencies {
-    testImplementation(kotlin("test"))
+//    testImplementation(kotlin("test"))
+    // https://mvnrepository.com/artifact/org.slf4j/slf4j-simple
+    implementation("org.slf4j:slf4j-simple:1.7.25")
+
+    implementation("io.github.microutils:kotlin-logging-jvm:2.1.20")
+
+//   testImplementation("ch.qos.logback:logback-classic:1.2.3")
+
+    // https://mvnrepository.com/artifact/org.slf4j/slf4j-log4j12
+    //    testImplementation("org.slf4j:slf4j-log4j12:1.7.25")
+
     implementation(compose.desktop.currentOs)
     implementation(Dependencies.kotlinCoroutine)
+    // https://mvnrepository.com/artifact/org.slf4j/slf4j-api
+    implementation("org.slf4j:slf4j-api:1.7.25")
 }
 
 tasks.test {

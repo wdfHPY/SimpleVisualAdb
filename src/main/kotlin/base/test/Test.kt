@@ -1,4 +1,6 @@
 import base.impl.AdbExecuteImpl
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.runBlocking
 import java.io.ByteArrayOutputStream
 import java.io.File
 import java.io.FileInputStream
@@ -8,10 +10,15 @@ import java.nio.file.Paths
 
 
 fun main() {
-    val adbExecuteImpl = AdbExecuteImpl()
-//    println(adbExecuteImpl.availableEquipmentList())
-//    println(adbExecuteImpl.checkConnect())
-    println(adbExecuteImpl.pullDeviceFile("/sdcard/ice_android_images_2.05.23.native.userdebug.icego_20220523.0000.00_12.0_1f8dde6b3e.tgz", "."))
+    runBlocking {
+        ScreenRecordManager.startScreenRecord()
+        delay(20000L)
+        println(ScreenRecordManager.stopScreenRecord())
+        delay(2000L)
+        println(ScreenRecordManager.pullFileToDevice())
+    }
+//    val adbExecuteImpl = AdbExecuteImpl
+
 //    repairByteCode()
 }
 

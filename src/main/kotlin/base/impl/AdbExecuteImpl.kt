@@ -7,7 +7,7 @@ import base.getProcessInputStream
 import java.io.BufferedReader
 import java.io.InputStreamReader
 
-class AdbExecuteImpl: AdbExecute {
+object AdbExecuteImpl: AdbExecute {
 
     override fun availableEquipmentList(): List<String> {
         val list = mutableListOf<String>()

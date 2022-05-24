@@ -4,7 +4,7 @@ import java.io.InputStream
 import java.io.OutputStream
 
 /**
- * 获取执行Command的进程。
+ * 获取执行Command的进程。当然此方法会阻塞当前的线程直到 Process 执行完成。
  * @param cmd 待执行的cmd命令。
  * @return Result<Process> Process的结果。
  */
@@ -14,6 +14,12 @@ fun getExecuteCommandProcess(
     Runtime.getRuntime().exec(cmd).also {
         it.waitFor()
     }
+}
+
+fun getExecuteCommandProcessNoBlock(
+    cmd: String
+) : Result<Process> = runCatching {
+    Runtime.getRuntime().exec(cmd)
 }
 
 /**

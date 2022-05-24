@@ -15,13 +15,16 @@ import kotlinx.coroutines.launch
 fun App() {
     var text by remember { mutableStateOf("Hello, World!") }
 
+    val tt = ScreenRecord.ScreenRecordStateFlow.collectAsState()
     MaterialTheme {
 
         Column {
 
             Button(onClick = {
-                println("点击开始")
-                ScreenRecord.startScreenRecordByUi()
+                GlobalScope.launch {
+                    println("点击开始")
+                    ScreenRecord.startScreenRecordByUi()
+                }
             }) {
                 Text("开始录像")
             }
@@ -36,10 +39,9 @@ fun App() {
             }
 
             Button(onClick = {
-                println("拉文件")
 //                ScreenRecordManager.pullFileToDevice()
             }) {
-                Text("导出录像")
+                Text(tt.value)
             }
 
         }

@@ -30,9 +30,9 @@ object ScreenRecordManager {
 
     fun pullFileToDevice() {
         println("pullFileToDevice")
-        AdbExecuteImpl.pullDeviceFile(
-            from = "/sdcard/xxx.mp4", to = "."
-        )
+//        AdbExecuteImpl.pullDeviceFile(
+//            from = "/sdcard/xxx.mp4", to = "."
+//        )
     }
 
 }

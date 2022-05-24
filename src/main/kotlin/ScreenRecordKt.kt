@@ -1,8 +1,13 @@
-import base.impl.AdbExecuteImpl
+import base.convertPullResult
 import kotlinx.coroutines.delay
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.runBlocking
 import mu.KotlinLogging
 import org.jetbrains.annotations.TestOnly
+import java.io.BufferedReader
+import java.io.InputStreamReader
+import java.util.concurrent.Flow
 
 /**
  * 现在出现一个问题，如果是在黑屏的情况下，录屏功能使用不了。
@@ -14,7 +19,15 @@ object ScreenRecord {
 
     private var screenRecordProcess: Process? = null
 
+    private var pullFileProcess: Process? = null
+
     private var ifScreenRecording: Boolean = false
+
+    private var ifPullingScreenFile: Boolean = false
+
+    private var mScreenRecordState: MutableStateFlow<String> = MutableStateFlow("")
+
+    val ScreenRecordStateFlow: StateFlow<String> get() = mScreenRecordState
 
     //这里需要作为Ui的状态来显示出来。
     val isScreenRecording get() = ifScreenRecording
@@ -33,18 +46,18 @@ object ScreenRecord {
      * 屏幕点击开始录像。
      * @param fileName 等待保存的文件名称。
      */
-    fun startScreenRecordByUi(
+    suspend fun startScreenRecordByUi(
         fileName: String = "emo"
     ) {
         startScreenRecord(fileName).onSuccess {
             screenRecordProcess = it
             ifScreenRecording = true
         }.onFailure { throwable ->
+            mScreenRecordState.emit("启动屏幕失败")
             logger.error(throwable) { "startScreenRecord onFailure" }
         }.onSuccess {
-            logger.info {
-                "startScreenRecord onSuccess"
-            }
+            mScreenRecordState.emit("开启屏幕录屏")
+            logger.info { "startScreenRecord onSuccess" }
         }
     }
 
@@ -53,19 +66,47 @@ object ScreenRecord {
             logger.info { "stopScreenRecord onSuccess" }
             screenRecordProcess = null
             ifScreenRecording = false
+            mScreenRecordState.emit("停止屏幕录屏")
             delay(500L)
             pullFileToDevice()
         }.onFailure { throwable ->
+            mScreenRecordState.emit("停止屏幕录屏失败")
             logger.error(throwable) { "stopScreenRecord onFailure" }
         }
     }
 
-    private fun pullFileToDevice() {
+    private suspend fun pullFileToDevice() {
         if (screenRecordProcess == null || screenRecordProcess?.isAlive == false) {
             logger.info { "start pullFileToDevice" }
-            AdbExecuteImpl.pullDeviceFile(from = "/sdcard/emo.mp4", to = ".")
+            startPullFileFromDevice(from = "/sdcard/emo.mp4", to = ".")
         }
     }
+
+    private suspend fun startPullFileFromDevice(from: String , to: String) {
+        val builder = StringBuilder()
+        pullFileProcess = kotlin.runCatching {
+            Runtime.getRuntime().exec(
+                "adb pull $from $to"
+            ).also {
+                it.waitFor()
+            }
+        }.getOrNull()
+
+        pullFileProcess?.inputStream?.let { ins ->
+            ifPullingScreenFile = true
+            mScreenRecordState.emit("开始拉取文件")
+            BufferedReader(InputStreamReader(ins)).run {
+                forEachLine { line -> builder.appendLine(line) }
+            }
+        }
+
+        builder.toString().convertPullResult()
+        pullFileProcess?.destroy()
+        mScreenRecordState.emit("文件拉取完成")
+        ifPullingScreenFile = false
+    }
+
+
 
 }
 

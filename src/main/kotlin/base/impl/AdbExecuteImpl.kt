@@ -35,15 +35,15 @@ object AdbExecuteImpl: AdbExecute {
         return state
     }
 
-    override fun pullDeviceFile(from: String, to: String): PullResultInfo {
-        val builder = StringBuilder()
-        getProcessInputStream("adb pull $from $to")?.let { ins ->
-            BufferedReader(InputStreamReader(ins)).run {
-                forEachLine { line -> builder.appendLine(line) }
-            }
-        }
-        return builder.toString().convertPullResult()
-    }
+//    override fun pullDeviceFile(from: String, to: String): PullResultInfo {
+//        val builder = StringBuilder()
+//        getProcessInputStream("adb pull $from $to")?.let { ins ->
+//            BufferedReader(InputStreamReader(ins)).run {
+//                forEachLine { line -> builder.appendLine(line) }
+//            }
+//        }
+//        return builder.toString().convertPullResult()
+//    }
 
 
 }

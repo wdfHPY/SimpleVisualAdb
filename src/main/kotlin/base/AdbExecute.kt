@@ -18,5 +18,5 @@ interface AdbExecute {
      * @param from 设备的文件路径。
      * @param to 主机的目标的路径。
      */
-    fun pullDeviceFile(from: String, to: String): PullResultInfo
+//    fun pullDeviceFile(from: String, to: String): PullResultInfo
 }

@@ -20,6 +20,7 @@ import androidx.compose.ui.unit.dp
 import base.resource.TaskLogBarBg
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.launch
+import java.text.SimpleDateFormat
 
 @Composable
 fun Content() {
@@ -78,7 +79,7 @@ fun TaskLogPageUi() {
 
                     // Add 5 items
                     items(1000) { index ->
-                        TaskLogPageUiListItem("Item: $index")
+                        TaskLogPageUiListItem("${SimpleDateFormat("yyyy-MM-dd HH:mm:ss.SSS").format(System.currentTimeMillis())} - Item: $index")
                     }
 
                     // Add another single item
@@ -96,6 +97,7 @@ fun TaskLogPageUiListItem(
 ) {
     Row {
         Text(text = content, modifier = Modifier.padding(start = 10.dp, top = 5.dp, bottom = 5.dp))
+        Checkbox(checked = false, onCheckedChange = {})
 
     }
 }

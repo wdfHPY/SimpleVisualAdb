@@ -19,13 +19,7 @@ fun main() = application {
         MaterialTheme {
             Scaffold(
                 topBar = {
-                    TopAppBar {
-                        Text("TopAppBar")
-                        Text("TopAppBar2")
-                        Text("TopAppBar3")
-                        Text("TopAppBar4")
-                        Text("TopAppBar5")
-                    }
+                    AppTopBar()
                 },
                 bottomBar = {
                     AppBottomBar()

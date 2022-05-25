@@ -29,6 +29,7 @@ fun AppBottomBar() {
     val shellTask = TaskManager.taskFlow.collectAsState()
     val toastInfo = ToastManager.toastFlow.collectAsState()
     BottomAppBar(modifier = Modifier.fillMaxWidth().height(24.dp), backgroundColor = BottomAppBarBgColor) {
+        /*  设备连接状态开始   */
         Icon(
             painter = when(connectState.value) {
                 is DeviceNoDoConnect -> {
@@ -58,6 +59,8 @@ fun AppBottomBar() {
         Text(connectState.value.state, fontSize = appBottomBarTextUnit, color = BottomAppBarTextColor,
             modifier = Modifier.padding(start = 10.dp), textAlign = TextAlign.Center
         )
+
+        /*  任务部分开始   */
         Icon(
             painter = painterResource("images/rightarrow.png"),
             contentDescription = null,
@@ -67,6 +70,8 @@ fun AppBottomBar() {
         Text(shellTask.value, fontSize = appBottomBarTextUnit, color = BottomAppBarTextColor,
             modifier = Modifier.padding(start = 10.dp), textAlign = TextAlign.Center
         )
+
+        /*  提示部分开始   */
         Icon(
             painter = painterResource("images/rightarrow.png"),
             contentDescription = null,

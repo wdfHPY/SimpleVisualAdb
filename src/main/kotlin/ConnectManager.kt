@@ -1,23 +1,26 @@
+import base.impl.AdbExecuteImpl
 import kotlinx.coroutines.*
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 
-sealed class ConnectState
+sealed class ConnectState(
+    open val state: String
+)
 
 /**
  * 默认设备状态是设备尚未进行连接。
  */
 data class DeviceNoDoConnect(
-    val string: String = "设备尚未连接"
-): ConnectState()
+    override val state: String = "设备尚未连接"
+): ConnectState(state = state)
 
 data class DeviceOnline(
-    val string: String = "设备在线"
-) : ConnectState()
+    override val state: String = "设备在线"
+) : ConnectState(state = state)
 
 data class DeviceDisConnect(
-    val state: String = "设备离线"
-) : ConnectState()
+    override val state: String = "设备离线"
+) : ConnectState(state = state)
 
 /**
  * 连接状态的管理器，控制连接状态的状态机。
@@ -36,22 +39,27 @@ object ConnectManager {
     /**
      * 状态机从尚未连接 -> 连接成功。
      */
-    fun doConnect() {
+    private fun judgeDeviceIsConnected() {
         scope.launch {
             mConnectStateFlow.emit(DeviceOnline())
         }
     }
 
-    fun disConnect() {
+    private fun judgeDeviceIsDisConnect() {
         scope.launch {
             mConnectStateFlow.emit(DeviceDisConnect())
         }
     }
 
     fun startCheckConnectJob() {
-        if (checkConnectStateJob?.isActive == true) {
-            checkConnectStateJob = scope.launch(Dispatchers.Default) {
-                delay(5000L)
+        checkConnectStateJob = scope.launch(Dispatchers.Default) {
+            while(isActive) {
+                if (AdbExecuteImpl.checkConnect()) {
+                    judgeDeviceIsConnected()
+                } else {
+                    judgeDeviceIsDisConnect()
+                }
+                delay(2_500L)
             }
         }
     }

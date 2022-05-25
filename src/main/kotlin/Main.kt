@@ -14,8 +14,6 @@ import kotlinx.coroutines.launch
 @Preview
 fun App() {
     var text by remember { mutableStateOf("Hello, World!") }
-
-    val tt = ScreenRecord.ScreenRecordStateFlow.collectAsState()
     MaterialTheme {
 
         Column {
@@ -36,12 +34,6 @@ fun App() {
                 }
             }) {
                 Text("结束录像")
-            }
-
-            Button(onClick = {
-//                ScreenRecordManager.pullFileToDevice()
-            }) {
-                Text(tt.value)
             }
 
         }

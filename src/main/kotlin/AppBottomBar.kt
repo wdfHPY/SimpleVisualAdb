@@ -11,6 +11,7 @@ import androidx.compose.runtime.collectAsState
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.input.key.Key.Companion.R
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.ExperimentalUnitApi
 import androidx.compose.ui.unit.TextUnit
 import androidx.compose.ui.unit.TextUnitType
@@ -19,13 +20,15 @@ import base.resource.*
 
 
 @OptIn(ExperimentalUnitApi::class)
-val appBottomBarTextUnit = TextUnit(11.5F, TextUnitType.Sp)
+val appBottomBarTextUnit = TextUnit(11.0F, TextUnitType.Sp)
 
 @Composable
 @Preview
 fun AppBottomBar() {
     val connectState = ConnectManager.connectStateFlow.collectAsState()
-    BottomAppBar(modifier = Modifier.fillMaxWidth().height(20.dp), backgroundColor = BottomAppBarBgColor) {
+    val shellTask = TaskManager.taskFlow.collectAsState()
+    val toastInfo = ToastManager.toastFlow.collectAsState()
+    BottomAppBar(modifier = Modifier.fillMaxWidth().height(24.dp), backgroundColor = BottomAppBarBgColor) {
         Icon(
             painter = when(connectState.value) {
                 is DeviceNoDoConnect -> {
@@ -52,10 +55,26 @@ fun AppBottomBar() {
             },
             modifier = Modifier.padding(start = 3.dp)
         )
-        Text("BottomAppBar", fontSize = appBottomBarTextUnit, color = BottomAppBarTextColor, modifier = Modifier.padding(start = 20.dp))
-        Text("BottomAppBar2")
-        Text("BottomAppBar3")
-        Text("BottomAppBar4")
-        Text("BottomAppBar5")
+        Text(connectState.value.state, fontSize = appBottomBarTextUnit, color = BottomAppBarTextColor,
+            modifier = Modifier.padding(start = 10.dp), textAlign = TextAlign.Center
+        )
+        Icon(
+            painter = painterResource("images/rightarrow.png"),
+            contentDescription = null,
+            tint = BottomAppBarRightArrow,
+            modifier = Modifier.padding(start = 40.dp)
+        )
+        Text(shellTask.value, fontSize = appBottomBarTextUnit, color = BottomAppBarTextColor,
+            modifier = Modifier.padding(start = 10.dp), textAlign = TextAlign.Center
+        )
+        Icon(
+            painter = painterResource("images/rightarrow.png"),
+            contentDescription = null,
+            tint = BottomAppBarRightArrow,
+            modifier = Modifier.padding(start = 40.dp)
+        )
+        Text(toastInfo.value, fontSize = appBottomBarTextUnit, color = BottomAppBarTextColor,
+            modifier = Modifier.padding(start = 10.dp), textAlign = TextAlign.Center
+        )
     }
 }

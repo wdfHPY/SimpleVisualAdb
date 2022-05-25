@@ -1,15 +1,14 @@
 import androidx.compose.desktop.ui.tooling.preview.Preview
-import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material.BottomAppBar
 import androidx.compose.material.Icon
+import androidx.compose.material.IconButton
 import androidx.compose.material.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.input.key.Key.Companion.R
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.ExperimentalUnitApi
@@ -70,13 +69,22 @@ fun AppBottomBar() {
         Text(shellTask.value, fontSize = appBottomBarTextUnit, color = BottomAppBarTextColor,
             modifier = Modifier.padding(start = 10.dp), textAlign = TextAlign.Center
         )
+        IconButton(onClick = {
+            ContentPageController.navigateToPageByIndex(TaskLogPage())
+        }, modifier = Modifier.padding(start = 40.dp)) {
+            Icon(
+                painter = painterResource("images/tasklog.png"),
+                contentDescription = null,
+                tint = BottomAppBarTaskLog
+            )
+        }
 
         /*  提示部分开始   */
         Icon(
             painter = painterResource("images/rightarrow.png"),
             contentDescription = null,
             tint = BottomAppBarRightArrow,
-            modifier = Modifier.padding(start = 40.dp)
+            modifier = Modifier.padding(start = 10.dp)
         )
         Text(toastInfo.value, fontSize = appBottomBarTextUnit, color = BottomAppBarTextColor,
             modifier = Modifier.padding(start = 10.dp), textAlign = TextAlign.Center

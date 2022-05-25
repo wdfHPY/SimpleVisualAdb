@@ -8,3 +8,6 @@ val BottomAppBarConnected= Color(0xff0061b2)
 val BottomAppBarDisConnect= Color(0xffd81e06)
 val BottomAppBarNoDoConnect= Color(0xffd4237a)
 val BottomAppBarRightArrow= Color(0xff3f81c1)
+val BottomAppBarTaskLog = Color(0xff333333)
+
+val TaskLogBarBg = Color(0xffe2e6ec)

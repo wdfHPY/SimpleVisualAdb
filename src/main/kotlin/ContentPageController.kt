@@ -3,7 +3,14 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.emptyFlow
 import kotlinx.coroutines.launch
+
+const val TASK_LOG_CONTENT_ID = 5
+const val TASK_LOG_DESCRIPTION = "任务的日志文件"
+
+const val HOME_CONTENT_ID = 1
+const val HOME_DESCRIPTION = "主页"
 
 /**
  * 抽象的UiContent类
@@ -15,16 +22,10 @@ sealed class UiContentPage(
     open val pageDescription: String
 )
 
-const val TASK_LOG_CONTENT_ID = 5
-const val TASK_LOG_DESCRIPTION = "任务的日志文件"
-
 data class TaskLogPage(
     override val pageIndex: Int = TASK_LOG_CONTENT_ID,
     override val pageDescription: String = TASK_LOG_DESCRIPTION
 ): UiContentPage(pageIndex = pageIndex, pageDescription = pageDescription)
-
-const val HOME_CONTENT_ID = 5
-const val HOME_DESCRIPTION = "主页"
 
 data class HomePage(
     override val pageIndex: Int = HOME_CONTENT_ID,
@@ -35,9 +36,6 @@ data class HomePage(
  * 主页内容的控制器。
  */
 object ContentPageController {
-    init {
-
-    }
     private val scope = CoroutineScope(Dispatchers.Default + SupervisorJob())
 
     private val mPageFlow: MutableStateFlow<UiContentPage> = MutableStateFlow(HomePage())

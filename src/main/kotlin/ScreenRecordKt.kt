@@ -1,13 +1,10 @@
 import base.convertPullResult
 import kotlinx.coroutines.delay
-import kotlinx.coroutines.flow.MutableStateFlow
-import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.runBlocking
 import mu.KotlinLogging
 import org.jetbrains.annotations.TestOnly
 import java.io.BufferedReader
 import java.io.InputStreamReader
-import java.util.concurrent.Flow
 
 /**
  * 现在出现一个问题，如果是在黑屏的情况下，录屏功能使用不了。
@@ -53,7 +50,7 @@ object ScreenRecord {
             ToastManager.updateToastInfo("启动屏幕失败")
             logger.error(throwable) { "startScreenRecord onFailure" }
         }.onSuccess {
-            ToastManager.updateToastInfo("开启屏幕录屏")
+            ToastManager.updateToastInfo("开启屏幕录屏，正在录屏中...")
             logger.info { "startScreenRecord onSuccess" }
         }
     }
@@ -63,7 +60,7 @@ object ScreenRecord {
             logger.info { "stopScreenRecord onSuccess" }
             screenRecordProcess = null
             ifScreenRecording = false
-            ToastManager.updateToastInfo("停止屏幕录屏")
+            ToastManager.updateToastInfo("停止录屏")
             delay(500L)
             pullFileToDevice()
         }.onFailure { throwable ->

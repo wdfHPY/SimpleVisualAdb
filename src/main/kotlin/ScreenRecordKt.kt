@@ -25,16 +25,13 @@ object ScreenRecord {
 
     private var ifPullingScreenFile: Boolean = false
 
-    private var mScreenRecordState: MutableStateFlow<String> = MutableStateFlow("")
-
-    val ScreenRecordStateFlow: StateFlow<String> get() = mScreenRecordState
-
     //这里需要作为Ui的状态来显示出来。
     val isScreenRecording get() = ifScreenRecording
 
     private fun startScreenRecord(
         fileName: String
     ) = runCatching {
+        TaskManager.updateTaskInfo("adb shell screenrecord /sdcard/${fileName}.mp4")
         Runtime.getRuntime().exec("adb shell screenrecord /sdcard/${fileName}.mp4")
     }
 
@@ -46,17 +43,17 @@ object ScreenRecord {
      * 屏幕点击开始录像。
      * @param fileName 等待保存的文件名称。
      */
-    suspend fun startScreenRecordByUi(
+    fun startScreenRecordByUi(
         fileName: String = "emo"
     ) {
         startScreenRecord(fileName).onSuccess {
             screenRecordProcess = it
             ifScreenRecording = true
         }.onFailure { throwable ->
-            mScreenRecordState.emit("启动屏幕失败")
+            ToastManager.updateToastInfo("启动屏幕失败")
             logger.error(throwable) { "startScreenRecord onFailure" }
         }.onSuccess {
-            mScreenRecordState.emit("开启屏幕录屏")
+            ToastManager.updateToastInfo("开启屏幕录屏")
             logger.info { "startScreenRecord onSuccess" }
         }
     }
@@ -66,25 +63,26 @@ object ScreenRecord {
             logger.info { "stopScreenRecord onSuccess" }
             screenRecordProcess = null
             ifScreenRecording = false
-            mScreenRecordState.emit("停止屏幕录屏")
+            ToastManager.updateToastInfo("停止屏幕录屏")
             delay(500L)
             pullFileToDevice()
         }.onFailure { throwable ->
-            mScreenRecordState.emit("停止屏幕录屏失败")
+            ToastManager.updateToastInfo("停止屏幕录屏失败")
             logger.error(throwable) { "stopScreenRecord onFailure" }
         }
     }
 
-    private suspend fun pullFileToDevice() {
+    private fun pullFileToDevice() {
         if (screenRecordProcess == null || screenRecordProcess?.isAlive == false) {
             logger.info { "start pullFileToDevice" }
             startPullFileFromDevice(from = "/sdcard/emo.mp4", to = ".")
         }
     }
 
-    private suspend fun startPullFileFromDevice(from: String , to: String) {
+    private fun startPullFileFromDevice(from: String , to: String) {
         val builder = StringBuilder()
         pullFileProcess = kotlin.runCatching {
+            TaskManager.updateTaskInfo("adb pull $from $to")
             Runtime.getRuntime().exec(
                 "adb pull $from $to"
             ).also {
@@ -94,7 +92,7 @@ object ScreenRecord {
 
         pullFileProcess?.inputStream?.let { ins ->
             ifPullingScreenFile = true
-            mScreenRecordState.emit("开始拉取文件")
+            ToastManager.updateToastInfo("开始拉取文件")
             BufferedReader(InputStreamReader(ins)).run {
                 forEachLine { line -> builder.appendLine(line) }
             }
@@ -102,7 +100,8 @@ object ScreenRecord {
 
         builder.toString().convertPullResult()
         pullFileProcess?.destroy()
-        mScreenRecordState.emit("文件拉取完成")
+        ToastManager.updateToastInfo("文件拉取完成")
+        logger.info { "文件拉取完成" }
         ifPullingScreenFile = false
     }
 

@@ -35,6 +35,9 @@ data class HomePage(
  * 主页内容的控制器。
  */
 object ContentPageController {
+    init {
+
+    }
     private val scope = CoroutineScope(Dispatchers.Default + SupervisorJob())
 
     private val mPageFlow: MutableStateFlow<UiContentPage> = MutableStateFlow(HomePage())
@@ -45,10 +48,10 @@ object ContentPageController {
      * 导航页面通
      */
     fun navigateToPageByIndex(
-        pageIndex: Int
+        page: UiContentPage
     ) {
         scope.launch {
-            mPageFlow.emit(TODO())
+            mPageFlow.emit(page)
         }
     }
 }

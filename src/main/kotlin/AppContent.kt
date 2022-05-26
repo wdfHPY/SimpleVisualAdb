@@ -1,5 +1,8 @@
 import androidx.compose.desktop.ui.tooling.preview.Preview
 import androidx.compose.foundation.*
+import androidx.compose.foundation.gestures.Orientation
+import androidx.compose.foundation.gestures.draggable
+import androidx.compose.foundation.gestures.rememberDraggableState
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.interaction.collectIsFocusedAsState
 import androidx.compose.foundation.interaction.collectIsPressedAsState
@@ -13,11 +16,15 @@ import androidx.compose.material.icons.filled.Edit
 import androidx.compose.material.icons.filled.Favorite
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
+import androidx.compose.ui.ExperimentalComposeUiApi
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.input.pointer.PointerEventType
+import androidx.compose.ui.input.pointer.onPointerEvent
 import androidx.compose.ui.layout.layoutId
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.DpOffset
 import androidx.compose.ui.unit.dp
 import base.resource.BottomAppBarTaskLog
@@ -122,9 +129,12 @@ fun TaskLogPageUiListItem(
     }
 }
 
+@OptIn(ExperimentalComposeUiApi::class)
 @Composable
 fun HomePageUi() {
-    BoxWithConstraints(
+    var offsetX by remember { mutableStateOf(200f) }
+    var active by remember { mutableStateOf(false) }
+    Box(
         modifier = Modifier.fillMaxSize().background(Color.Red)
     ) {
         Column {
@@ -146,13 +156,16 @@ fun HomePageUi() {
                 Text("结束录像")
             }
 
-            Button(onClick = {
-                GlobalScope.launch {
-//                    println("导航到新的界面")
-                }
-            }) {
-                Text("导航到新的界面")
-            }
+//        Box(modifier = Modifier.align(Alignment.BottomCenter).fillMaxWidth().height((offsetX+20).dp)) {
+//            Spacer(modifier = Modifier.height(20.dp).fillMaxWidth().background(color = if (active) Color(0xffd1d1d1) else Color(0xfff4f4f4)).draggable(
+//                orientation = Orientation.Vertical,
+//                state = rememberDraggableState { delta ->
+//                    offsetX -= delta
+//                }
+//            ).onPointerEvent(PointerEventType.Enter) { active = true }.onPointerEvent(PointerEventType.Exit) { active = false })
+//            Box(modifier = Modifier.fillMaxWidth().height(offsetX.dp).background(Color.Yellow).align(Alignment.BottomCenter)) {
+//
+//            }
         }
     }
 }

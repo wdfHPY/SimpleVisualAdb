@@ -5,6 +5,7 @@ import androidx.compose.foundation.interaction.collectIsFocusedAsState
 import androidx.compose.foundation.interaction.collectIsPressedAsState
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.material.*
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Delete
@@ -15,8 +16,11 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.layout.layoutId
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.DpOffset
 import androidx.compose.ui.unit.dp
+import base.resource.BottomAppBarTaskLog
 import base.resource.TaskLogBarBg
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.launch
@@ -63,31 +67,47 @@ fun dropdownMenuItemTest(state: MutableState<Boolean>, icon: ImageVector, text:S
     }
 }
 
+
 @Composable
 fun TaskLogPageUi() {
-    BoxWithConstraints(
-        modifier = Modifier.fillMaxSize().background(Color.White)
-    ) {
-        Column {
-            Row(modifier = Modifier.fillMaxWidth().height(30.dp).background(TaskLogBarBg)) {
+    Column(modifier = Modifier.fillMaxSize().background(Color.White)) {
+        Box(modifier = Modifier.fillMaxWidth().height(20.dp).background(TaskLogBarBg)) {
+            IconButton(onClick = {
+                ContentPageController.navigateToPageByIndex(HomePage())
+            }, modifier = Modifier.align(Alignment.CenterEnd)) {
+                Icon(
+                    painter = painterResource("images/hide.png"),
+                    contentDescription = null,
+                    tint = BottomAppBarTaskLog
+                )
             }
-            LazyColumn(modifier = Modifier.fillMaxSize()) {
-                    // Add a single item
-                    item {
-                        Text(text = "First ")
-                    }
+        }
+        Box(modifier = Modifier.fillMaxSize()) {
+            val state = rememberLazyListState()
 
-                    // Add 5 items
-                    items(1000) { index ->
-                        TaskLogPageUiListItem("${SimpleDateFormat("yyyy-MM-dd HH:mm:ss.SSS").format(System.currentTimeMillis())} - Item: $index")
-                    }
+            LazyColumn(modifier = Modifier.fillMaxSize(), state) {
+                // Add a single item
+                item {
+                    Text(text = "First ")
+                }
 
-                    // Add another single item
-                    item {
-                        Text(text = "Last item")
-                    }
+                // Add 5 items
+                items(1000) { index ->
+                    TaskLogPageUiListItem("${SimpleDateFormat("yyyy-MM-dd HH:mm:ss.SSS").format(System.currentTimeMillis())} - Item: $index")
+                }
+
+                // Add another single item
+                item {
+                    Text(text = "Last item")
                 }
             }
+            VerticalScrollbar(
+                modifier = Modifier.align(Alignment.CenterEnd).fillMaxHeight(),
+                adapter = rememberScrollbarAdapter(
+                    scrollState = state
+                )
+            )
+        }
     }
 }
 

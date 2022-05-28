@@ -4,8 +4,10 @@ import androidx.compose.runtime.remember
 import androidx.compose.ui.window.Window
 import androidx.compose.ui.window.application
 
+@OptIn(ExperimentalMaterialApi::class)
 fun main() = application {
     ConnectManager.startCheckConnectJob()
+    val scaffoldState = rememberBottomSheetScaffoldState()
     Window(
         onCloseRequest = ::exitApplication,
         title = "Simple Visual Adb",
@@ -17,10 +19,12 @@ fun main() = application {
                     AppTopBar()
                 },
                 bottomBar = {
-                    AppBottomBar()
+                    AppBottomBar(
+                        scaffoldState.bottomSheetState
+                    )
                 }
             ) {
-                Content()
+                Content(scaffoldState)
             }
         }
     }

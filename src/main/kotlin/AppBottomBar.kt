@@ -4,6 +4,7 @@ import androidx.compose.foundation.layout.*
 import androidx.compose.material.*
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.layout.SubcomposeLayout
@@ -15,17 +16,22 @@ import androidx.compose.ui.unit.TextUnitType
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.*
 import base.resource.*
+import kotlinx.coroutines.launch
 
 
 @OptIn(ExperimentalUnitApi::class)
 val appBottomBarTextUnit = TextUnit(11.0F, TextUnitType.Sp)
 
+@OptIn(ExperimentalMaterialApi::class)
 @Composable
 @Preview
-fun AppBottomBar() {
+fun AppBottomBar(
+    bottomSheetState: BottomSheetState
+) {
     val connectState = ConnectManager.connectStateFlow.collectAsState()
     val shellTask = TaskManager.taskFlow.collectAsState()
     val toastInfo = ToastManager.toastFlow.collectAsState()
+    val scope = rememberCoroutineScope()
     BottomAppBar(modifier = Modifier.fillMaxWidth().height(24.dp), backgroundColor = BottomAppBarBgColor) {
         /*  设备连接状态开始   */
         Icon(
@@ -69,7 +75,13 @@ fun AppBottomBar() {
             modifier = Modifier.padding(start = 10.dp), textAlign = TextAlign.Center
         )
         IconButton(onClick = {
+            scope.launch {
+                bottomSheetState.apply {
+                    if (isCollapsed) expand() else collapse()
+                }
+            }
 //            ContentPageController.navigateToPageByIndex(TaskLogPage())
+//            BackMoon()
         }, modifier = Modifier.padding(start = 40.dp)) {
             Icon(
                 painter = painterResource("images/tasklog.png"),

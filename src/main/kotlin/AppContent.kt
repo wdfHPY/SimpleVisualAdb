@@ -9,15 +9,15 @@ import androidx.compose.foundation.interaction.collectIsPressedAsState
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.rememberLazyListState
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.*
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Delete
-import androidx.compose.material.icons.filled.Edit
-import androidx.compose.material.icons.filled.Favorite
+import androidx.compose.material.icons.filled.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.ExperimentalComposeUiApi
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.input.pointer.PointerEventType
@@ -26,18 +26,23 @@ import androidx.compose.ui.layout.layoutId
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.DpOffset
+import androidx.compose.ui.unit.DpSize
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.window.*
 import base.resource.BottomAppBarTaskLog
 import base.resource.TaskLogBarBg
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.launch
 import java.text.SimpleDateFormat
 
+@OptIn(ExperimentalMaterialApi::class)
 @Composable
-fun Content() {
+fun Content(
+    bottomSheetState: BottomSheetScaffoldState
+) {
     val state = ContentPageController.pageFlow.collectAsState()
     when(state.value) {
-         is HomePage -> HomePageUi()
+         is HomePage -> TT(bottomSheetState)
          is TaskLogPage -> TaskLogPageUi()
     }
 }
@@ -137,36 +142,93 @@ fun HomePageUi() {
     Box(
         modifier = Modifier.fillMaxSize().background(Color.Red)
     ) {
-        Column {
-            Button(onClick = {
-                GlobalScope.launch {
-                    println("点击开始")
-                    ScreenRecord.startScreenRecordByUi()
-                }
-            }) {
-                Text("开始录像")
-            }
-
-            Button(onClick = {
-                GlobalScope.launch {
-                    println("点击结束")
-                    ScreenRecord.stopScreenRecordByUi()
-                }
-            }) {
-                Text("结束录像")
-            }
-
-//        Box(modifier = Modifier.align(Alignment.BottomCenter).fillMaxWidth().height((offsetX+20).dp)) {
-//            Spacer(modifier = Modifier.height(20.dp).fillMaxWidth().background(color = if (active) Color(0xffd1d1d1) else Color(0xfff4f4f4)).draggable(
-//                orientation = Orientation.Vertical,
-//                state = rememberDraggableState { delta ->
-//                    offsetX -= delta
+//        Column {
+//            Button(onClick = {
+//                GlobalScope.launch {
+//                    println("点击开始")
+//                    ScreenRecord.startScreenRecordByUi()
 //                }
-//            ).onPointerEvent(PointerEventType.Enter) { active = true }.onPointerEvent(PointerEventType.Exit) { active = false })
-//            Box(modifier = Modifier.fillMaxWidth().height(offsetX.dp).background(Color.Yellow).align(Alignment.BottomCenter)) {
-//
+//            }) {
+//                Text("开始录像")
 //            }
+
+//            Button(onClick = {
+//                GlobalScope.launch {
+//                    println("点击结束")
+//                    ScreenRecord.stopScreenRecordByUi()
+//                }
+//            }) {
+//                Text("结束录像")
+//            }
+
+        Box(modifier = Modifier.align(Alignment.BottomCenter).fillMaxWidth().heightIn(min = 20.dp)) {
+            Spacer(modifier = Modifier.height(20.dp).fillMaxWidth().background(color = if (active) Color(0xffd1d1d1) else Color(0xfff4f4f4)).draggable(
+                orientation = Orientation.Vertical,
+                state = rememberDraggableState { delta ->
+                    offsetX -= delta
+                }
+            ).onPointerEvent(PointerEventType.Enter) { active = true }.onPointerEvent(PointerEventType.Exit) { active = false })
+            Box(modifier = Modifier.fillMaxWidth().height(offsetX.dp).background(Color.Yellow).align(Alignment.BottomCenter)) {
+
+            }
         }
     }
 }
+
+@OptIn(ExperimentalMaterialApi::class)
+//fun main() = application {
+//    var isOpen by remember { mutableStateOf(true) }
+//    if (isOpen) {
+//        val state2 = rememberWindowState(placement = WindowPlacement.Floating)
+//        Window(
+//            onCloseRequest = ,
+//            title = "Transparent Window Example",
+//            state = state2,
+//        ) {
+//            BackMoon()
+//        }
+//    }
+//}
+
+@Composable
+fun TT(
+    bottomSheetState: BottomSheetScaffoldState
+) {
+    var sheetPeekHeight  by remember { mutableStateOf(100.0) }
+    BottomSheetScaffold(
+        sheetPeekHeight = 0.dp,
+        scaffoldState = bottomSheetState,
+        topBar = {
+            Text("This is SheetContent of ", modifier = Modifier.height(20.dp))
+        },
+        sheetContent = {
+            // Sheet content
+            Box(modifier = Modifier.height(400.dp).background(Color.Yellow)) {
+                Text("This is SheetContent of ")
+            }
+
+        }
+    ) {
+
+        LazyColumn {
+            items(1000) { index ->
+                TaskLogPageUiListItem("${SimpleDateFormat("yyyy-MM-dd HH:mm:ss.SSS").format(System.currentTimeMillis())} - Item: $index")
+            }
+        }
+        Text("sssssssssssssssssssssssssssssss")
+        Text("sssssssssssssssssssssssssssssss", modifier = Modifier.padding(top = 40.dp))
+        Text("sssssssssssssssssssssssssssssss", modifier = Modifier.padding(top = 40.dp))
+        Text("sssssssssssssssssssssssssssssss", modifier = Modifier.padding(top = 40.dp))
+        Text("sssssssssssssssssssssssssssssss", modifier = Modifier.padding(top = 40.dp))
+        Text("sssssssssssssssssssssssssssssss", modifier = Modifier.padding(top = 40.dp))
+        Text("sssssssssssssssssssssssssssssss", modifier = Modifier.padding(top = 40.dp))
+        Text("sssssssssssssssssssssssssssssss", modifier = Modifier.padding(top = 40.dp))
+        Text("sssssssssssssssssssssssssssssss", modifier = Modifier.padding(top = 40.dp))
+        Text("sssssssssssssssssssssssssssssss", modifier = Modifier.padding(top = 40.dp))
+        Text("sssssssssssssssssssssssssssssss", modifier = Modifier.padding(top = 40.dp))
+
+    }
+}
+
+
 

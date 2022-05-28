@@ -59,7 +59,7 @@ object ConnectManager {
                 } else {
                     judgeDeviceIsDisConnect()
                 }
-                delay(2_500L)
+                delay(1_000L)
             }
         }
     }

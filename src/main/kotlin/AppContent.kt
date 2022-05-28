@@ -24,11 +24,11 @@ import androidx.compose.ui.input.pointer.PointerEventType
 import androidx.compose.ui.input.pointer.onPointerEvent
 import androidx.compose.ui.layout.layoutId
 import androidx.compose.ui.res.painterResource
-import androidx.compose.ui.unit.Dp
-import androidx.compose.ui.unit.DpOffset
-import androidx.compose.ui.unit.DpSize
-import androidx.compose.ui.unit.dp
+import androidx.compose.ui.text.font.FontFamily
+import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.unit.*
 import androidx.compose.ui.window.*
+import base.resource.BottomAppBarBgColor
 import base.resource.BottomAppBarTaskLog
 import base.resource.TaskLogBarBg
 import kotlinx.coroutines.GlobalScope
@@ -41,11 +41,81 @@ fun Content(
     bottomSheetState: BottomSheetScaffoldState
 ) {
     val state = ContentPageController.pageFlow.collectAsState()
-    when(state.value) {
-         is HomePage -> TT(bottomSheetState)
-         is TaskLogPage -> TaskLogPageUi()
+    Row  {
+        Column(modifier = Modifier.fillMaxHeight().width(175.dp).background(Color.Red)) {
+            TimeArea() //
+
+            Task()
+
+            MultiTask()
+//
+            TaskLogger()
+//
+            Logcat()
+//
+            Setting()
+
+
+        }
+
+        Box(modifier = Modifier.fillMaxSize()) {
+            when(state.value) {
+                is HomePage -> TT(bottomSheetState)
+                is TaskLogPage -> TaskLogPageUi()
+            }
+        }
     }
 }
+
+@OptIn(ExperimentalUnitApi::class)
+@Composable
+fun TimeArea() {
+    Column (modifier = Modifier.fillMaxWidth().height(80.dp).background(Color(0xfff4f4f4))) {
+        Box(modifier = Modifier.height(40.dp).fillMaxWidth().align(Alignment.CenterHorizontally)) {
+            Text("22:42", modifier = Modifier.align(Alignment.Center), fontSize = TextUnit(28.0F, TextUnitType.Sp), fontWeight = FontWeight.W100, fontFamily = FontFamily.Monospace)
+        }
+
+        Box(modifier = Modifier.height(40.dp).fillMaxWidth().align(Alignment.CenterHorizontally)) {
+            Text(text = "2022/05/28", modifier = Modifier.align(Alignment.Center), fontSize = TextUnit(20.0F, TextUnitType.Sp), fontWeight = FontWeight.W100, fontFamily = FontFamily.Monospace)
+        }
+    }
+}
+
+@Composable
+fun Task() {
+    Box (modifier = Modifier.fillMaxWidth().height(75.dp).background(Color.DarkGray)) {
+
+    }
+}
+
+@Composable
+fun MultiTask() {
+    Box (modifier = Modifier.fillMaxWidth().height(75.dp).background(Color.Magenta)) {
+
+    }
+}
+
+@Composable
+fun TaskLogger() {
+    Box (modifier = Modifier.fillMaxWidth().height(75.dp).background(Color.Blue)) {
+
+    }
+}
+
+@Composable
+fun Logcat() {
+    Box (modifier = Modifier.fillMaxWidth().height(75.dp).background(Color.Cyan)) {
+
+    }
+}
+
+@Composable
+fun Setting() {
+    Box (modifier = Modifier.fillMaxWidth().height(75.dp).background(Color.Black)) {
+
+    }
+}
+
 
 @Preview
 @Composable

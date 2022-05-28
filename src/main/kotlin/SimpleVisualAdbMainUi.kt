@@ -1,8 +1,24 @@
+import androidx.compose.foundation.background
+import androidx.compose.foundation.border
+import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.shape.CornerBasedShape
+import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.window.WindowDraggableArea
 import androidx.compose.material.*
+import androidx.compose.runtime.Composable
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.shadow
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.unit.DpSize
+import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.Window
+import androidx.compose.ui.window.WindowScope
+import androidx.compose.ui.window.WindowState
 import androidx.compose.ui.window.application
+import base.resource.BottomAppBarBgColor
+import base.resource.simpleAdbColors
 
 @OptIn(ExperimentalMaterialApi::class)
 fun main() = application {
@@ -10,22 +26,23 @@ fun main() = application {
     val scaffoldState = rememberBottomSheetScaffoldState()
     Window(
         onCloseRequest = ::exitApplication,
-        title = "Simple Visual Adb",
+        title = "",
+        state = WindowState(size = DpSize(width = 1200.dp, height = 650.dp)),
     ) {
-        val count = remember { mutableStateOf(0) }
-        MaterialTheme {
-            Scaffold(
-                topBar = {
-                    AppTopBar()
-                },
-                bottomBar = {
-                    AppBottomBar(
-                        scaffoldState.bottomSheetState
-                    )
-                }
-            ) {
-                Content(scaffoldState)
-            }
+        Scaffold(modifier = Modifier.fillMaxSize(),
+            bottomBar = {
+                AppBottomBar(
+                    scaffoldState.bottomSheetState
+                )
+            },
+        ) {
+            Content(scaffoldState)
         }
     }
+
+}
+
+@Composable
+private fun WindowScope.AppWindowTitleBar() = WindowDraggableArea {
+    Box(Modifier.fillMaxWidth().height(48.dp).background(Color.DarkGray))
 }

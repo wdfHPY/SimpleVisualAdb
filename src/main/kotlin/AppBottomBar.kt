@@ -1,12 +1,15 @@
 import androidx.compose.desktop.ui.tooling.preview.Preview
+import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.*
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.SubcomposeLayout
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.style.TextAlign
@@ -20,7 +23,7 @@ import kotlinx.coroutines.launch
 
 
 @OptIn(ExperimentalUnitApi::class)
-val appBottomBarTextUnit = TextUnit(11.0F, TextUnitType.Sp)
+val appBottomBarTextUnit = TextUnit(13.0F, TextUnitType.Sp)
 
 @OptIn(ExperimentalMaterialApi::class)
 @Composable
@@ -32,7 +35,7 @@ fun AppBottomBar(
     val shellTask = TaskManager.taskFlow.collectAsState()
     val toastInfo = ToastManager.toastFlow.collectAsState()
     val scope = rememberCoroutineScope()
-    BottomAppBar(modifier = Modifier.fillMaxWidth().height(24.dp), backgroundColor = BottomAppBarBgColor) {
+    BottomAppBar(modifier = Modifier.fillMaxWidth().height(30.dp).background(shape = RoundedCornerShape(40.dp), color = Color.White), backgroundColor = BottomAppBarBgColor) {
         /*  设备连接状态开始   */
         Icon(
             painter = when(connectState.value) {

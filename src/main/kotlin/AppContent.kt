@@ -27,9 +27,12 @@ import androidx.compose.ui.text.input.TextFieldValue
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.*
 import base.bean.AdbTask
+import base.bean.CurrentTask
 import base.resource.BottomAppBarTaskLog
 import base.resource.BottomAppBarTextColor
 import base.resource.TaskLogBarBg
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
 import java.text.SimpleDateFormat
 
 @OptIn(ExperimentalMaterialApi::class)
@@ -148,6 +151,10 @@ fun MultiTask(value: UiContentPage) {
 fun MultitaskPageUi() {
     var text by remember { mutableStateOf(TextFieldValue("")) }
     var list by remember { mutableStateOf(emptyList<AdbTask>()) }
+    val scope = rememberCoroutineScope()
+
+    val multiTaskTask = ProcessRunnerManager.multiTaskFlow.collectAsState()
+    val multiTaskStateTask = ProcessRunnerManager.multiTaskStateFlow.collectAsState()
     Column(modifier = Modifier.fillMaxSize()) {
         Row(modifier = Modifier.fillMaxWidth().height(80.dp)) {
             TextField(
@@ -189,7 +196,9 @@ fun MultitaskPageUi() {
             }
 
             IconButton(onClick = {
-
+                scope.launch(Dispatchers.Default) {
+                    runMultiTask(list)
+                }
             }, modifier = Modifier.align(Alignment.CenterVertically).padding(start = 10.dp)) {
                 Icon(
                     painter = painterResource("images/run.png"),
@@ -236,9 +245,10 @@ fun MultitaskPageUi() {
                             )
 
                             Spacer(modifier = Modifier.fillMaxWidth().height(1.dp).background(Color(0xffd1d1d1)))
-
                             Text(
-                                text = "Result: ",
+                                text = "Result: ${
+                                    multiTaskTask.value[list[index].adbShellCommandStr].toString()
+                                }",
                                 color = Color(0xff010101),
                                 modifier = Modifier.fillMaxWidth().height(55.dp).padding(top = 4.dp),
                                 textAlign = TextAlign.Center
@@ -246,7 +256,9 @@ fun MultitaskPageUi() {
                             Spacer(modifier = Modifier.fillMaxWidth().height(1.dp).background(Color(0xffd1d1d1)))
                             Row(modifier = Modifier.fillMaxSize()) {
                                 Text(
-                                    text = "state: ${list[index].adbShellState.description}",
+                                    text = "state: ${
+                                        multiTaskStateTask.value[list[index].adbShellCommandStr]?.description ?: "等待執行"
+                                    }",
                                     modifier = Modifier.padding(start = 5.dp).align(Alignment.CenterVertically),
                                     color =
                                     Color(0xff0e932e),
@@ -260,6 +272,12 @@ fun MultitaskPageUi() {
         )
     }
 
+}
+
+fun runMultiTask(list: List<AdbTask>) {
+    list.onEach {
+        ProcessRunnerManager.startAutoEndProcess(it.adbShellCommandStr)
+    }
 }
 
 @OptIn(ExperimentalUnitApi::class)

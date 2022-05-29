@@ -9,7 +9,12 @@ package base.bean
 data class AdbTask(
     val adbShellCommandIndex: Int,
     val adbShellCommandStr: String,
-    var adbShellResult: String = "",
+    var adbShellResult: List<String> = emptyList(),
+    var adbShellState: ShellState = WaitForExecute()
+)
+
+data class CurrentTask(
+    var adbShellCommandStr: String,
     var adbShellState: ShellState = WaitForExecute()
 )
 

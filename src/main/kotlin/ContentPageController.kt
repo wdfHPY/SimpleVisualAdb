@@ -6,11 +6,20 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.emptyFlow
 import kotlinx.coroutines.launch
 
-const val TASK_LOG_CONTENT_ID = 5
-const val TASK_LOG_DESCRIPTION = "任务的日志文件"
+const val TASK_CONTENT_ID = 0
+const val TASK_DESCRIPTION = "任务"
 
-const val HOME_CONTENT_ID = 1
-const val HOME_DESCRIPTION = "主页"
+const val MULTITASK_CONTENT_ID = 1
+const val MULTITASK_DESCRIPTION = "多任务"
+
+const val TASK_LOGGER_ID = 2
+const val TASK_LOGGER_DESCRIPTION = "任务日志"
+
+const val TASK_LOGCAT_ID = 3
+const val TASK_LOGCAT_DESCRIPTION = "Logcat"
+
+const val TASK_SETTING_ID = 4
+const val TASK_SETTING_DESCRIPTION = "设置"
 
 /**
  * 抽象的UiContent类
@@ -22,14 +31,29 @@ sealed class UiContentPage(
     open val pageDescription: String
 )
 
-data class TaskLogPage(
-    override val pageIndex: Int = TASK_LOG_CONTENT_ID,
-    override val pageDescription: String = TASK_LOG_DESCRIPTION
+data class TaskPage(
+    override val pageIndex: Int = TASK_CONTENT_ID,
+    override val pageDescription: String = TASK_DESCRIPTION
 ): UiContentPage(pageIndex = pageIndex, pageDescription = pageDescription)
 
-data class HomePage(
-    override val pageIndex: Int = HOME_CONTENT_ID,
-    override val pageDescription: String = HOME_DESCRIPTION
+data class MultitaskPage(
+    override val pageIndex: Int = MULTITASK_CONTENT_ID,
+    override val pageDescription: String = MULTITASK_DESCRIPTION
+): UiContentPage(pageIndex = pageIndex, pageDescription = pageDescription)
+
+data class TaskLoggerPage(
+    override val pageIndex: Int = TASK_LOGGER_ID,
+    override val pageDescription: String = TASK_LOGGER_DESCRIPTION
+): UiContentPage(pageIndex = pageIndex, pageDescription = pageDescription)
+
+data class LogcatPage(
+    override val pageIndex: Int = TASK_LOGCAT_ID,
+    override val pageDescription: String = TASK_LOGCAT_DESCRIPTION
+): UiContentPage(pageIndex = pageIndex, pageDescription = pageDescription)
+
+data class SettingPage(
+    override val pageIndex: Int = TASK_SETTING_ID,
+    override val pageDescription: String = TASK_SETTING_DESCRIPTION
 ): UiContentPage(pageIndex = pageIndex, pageDescription = pageDescription)
 
 /**
@@ -38,7 +62,7 @@ data class HomePage(
 object ContentPageController {
     private val scope = CoroutineScope(Dispatchers.Default + SupervisorJob())
 
-    private val mPageFlow: MutableStateFlow<UiContentPage> = MutableStateFlow(HomePage())
+    private val mPageFlow: MutableStateFlow<UiContentPage> = MutableStateFlow(TaskPage())
 
     val pageFlow: StateFlow<UiContentPage> get() = mPageFlow
 

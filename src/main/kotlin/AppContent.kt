@@ -9,31 +9,23 @@ import androidx.compose.foundation.interaction.collectIsPressedAsState
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.rememberLazyListState
-import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.*
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.ExperimentalComposeUiApi
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.input.pointer.PointerEventType
 import androidx.compose.ui.input.pointer.onPointerEvent
-import androidx.compose.ui.layout.layoutId
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.*
-import androidx.compose.ui.window.*
-import base.resource.BottomAppBarBgColor
 import base.resource.BottomAppBarTaskLog
 import base.resource.TaskLogBarBg
-import kotlinx.coroutines.GlobalScope
-import kotlinx.coroutines.launch
 import java.text.SimpleDateFormat
+import java.util.logging.Logger
 
 @OptIn(ExperimentalMaterialApi::class)
 @Composable
@@ -42,26 +34,31 @@ fun Content(
 ) {
     val state = ContentPageController.pageFlow.collectAsState()
     Row  {
-        Column(modifier = Modifier.fillMaxHeight().width(175.dp).background(Color.Red)) {
-            TimeArea() //
+        Column(modifier = Modifier.fillMaxHeight().width(175.dp).background(Color(0xfff4f4f4))) {
+            TimeArea()
 
-            Task()
+            Spacer(modifier = Modifier.fillMaxWidth().height(1.dp).background(Color(0xffd1d1d1)))
 
-            MultiTask()
-//
-            TaskLogger()
-//
-            Logcat()
-//
-            Setting()
+            Task(state.value)
 
+            MultiTask(state.value)
 
+            TaskLogger(state.value)
+
+            Logcat(state.value)
+
+            Setting(state.value)
+
+            Spacer(modifier = Modifier.fillMaxWidth().height(1.dp).background(Color(0xffd1d1d1)))
         }
 
         Box(modifier = Modifier.fillMaxSize()) {
             when(state.value) {
-                is HomePage -> TT(bottomSheetState)
-                is TaskLogPage -> TaskLogPageUi()
+                is TaskPage -> TaskPageUi()
+                is MultitaskPage -> TaskLogPageUi()
+                is TaskLoggerPage -> TaskLoggerPageUi()
+                is LogcatPage -> TaskLogPageUi()
+                is SettingPage -> TaskLogPageUi()
             }
         }
     }
@@ -81,38 +78,77 @@ fun TimeArea() {
     }
 }
 
+@OptIn(ExperimentalUnitApi::class)
 @Composable
-fun Task() {
-    Box (modifier = Modifier.fillMaxWidth().height(75.dp).background(Color.DarkGray)) {
-
+fun Task(
+    value: UiContentPage
+) {
+    Box (modifier = Modifier.fillMaxWidth().height(70.dp).clickable {
+        ContentPageController.navigateToPageByIndex(TaskPage())
+    }.background(
+        if (value is TaskPage) Color.White else Color(0xfff4f4f4)
+    )) {
+        Text("Task", modifier = Modifier.align(Alignment.Center),fontSize = TextUnit(16.0F, TextUnitType.Sp), fontWeight = FontWeight.W100, fontFamily = FontFamily.Monospace)
     }
 }
 
 @Composable
-fun MultiTask() {
-    Box (modifier = Modifier.fillMaxWidth().height(75.dp).background(Color.Magenta)) {
+fun TaskPageUi() {
+    Box (modifier = Modifier.fillMaxSize().background(Color.Blue)) {
+    }
+}
 
+@OptIn(ExperimentalUnitApi::class)
+@Composable
+fun MultiTask(value: UiContentPage) {
+    Box (modifier = Modifier.fillMaxWidth().height(70.dp).clickable {
+        ContentPageController.navigateToPageByIndex(MultitaskPage())
+    }.background(
+        if (value is MultitaskPage) Color.White else Color(0xfff4f4f4)
+    )) {
+        Text("Multitasking", modifier = Modifier.align(Alignment.Center),fontSize = TextUnit(16.0F, TextUnitType.Sp), fontWeight = FontWeight.W100, fontFamily = FontFamily.Monospace)
+    }
+}
+
+@OptIn(ExperimentalUnitApi::class)
+@Composable
+fun TaskLogger(value: UiContentPage) {
+    Box (modifier = Modifier.fillMaxWidth().height(70.dp).clickable {
+        ContentPageController.navigateToPageByIndex(TaskLoggerPage())
+    }.background(
+        if (value is TaskLoggerPage) Color.White else Color(0xfff4f4f4)
+    )) {
+        Text("Task Log", modifier = Modifier.align(Alignment.Center),fontSize = TextUnit(16.0F, TextUnitType.Sp), fontWeight = FontWeight.W100, fontFamily = FontFamily.Monospace)
     }
 }
 
 @Composable
-fun TaskLogger() {
-    Box (modifier = Modifier.fillMaxWidth().height(75.dp).background(Color.Blue)) {
-
+fun TaskLoggerPageUi() {
+    Box (modifier = Modifier.fillMaxSize().background(Color.Magenta)) {
     }
 }
 
+@OptIn(ExperimentalUnitApi::class)
 @Composable
-fun Logcat() {
-    Box (modifier = Modifier.fillMaxWidth().height(75.dp).background(Color.Cyan)) {
-
+fun Logcat(value: UiContentPage) {
+    Box (modifier = Modifier.fillMaxWidth().height(70.dp).clickable {
+        ContentPageController.navigateToPageByIndex(LogcatPage())
+    }.background(
+        if (value is LogcatPage) Color.White else Color(0xfff4f4f4)
+    )) {
+        Text("Logcat", modifier = Modifier.align(Alignment.Center),fontSize = TextUnit(16.0F, TextUnitType.Sp), fontWeight = FontWeight.W100, fontFamily = FontFamily.Monospace)
     }
 }
 
+@OptIn(ExperimentalUnitApi::class)
 @Composable
-fun Setting() {
-    Box (modifier = Modifier.fillMaxWidth().height(75.dp).background(Color.Black)) {
-
+fun Setting(value: UiContentPage) {
+    Box (modifier = Modifier.fillMaxWidth().height(70.dp).clickable {
+        ContentPageController.navigateToPageByIndex(SettingPage())
+    }.background(
+        if (value is SettingPage) Color.White else Color(0xfff4f4f4)
+    )) {
+        Text("Setting", modifier = Modifier.align(Alignment.Center),fontSize = TextUnit(16.0F, TextUnitType.Sp), fontWeight = FontWeight.W100, fontFamily = FontFamily.Monospace)
     }
 }
 
@@ -155,7 +191,7 @@ fun TaskLogPageUi() {
     Column(modifier = Modifier.fillMaxSize().background(Color.White)) {
         Box(modifier = Modifier.fillMaxWidth().height(20.dp).background(TaskLogBarBg)) {
             IconButton(onClick = {
-                ContentPageController.navigateToPageByIndex(HomePage())
+                ContentPageController.navigateToPageByIndex(TaskPage())
             }, modifier = Modifier.align(Alignment.CenterEnd)) {
                 Icon(
                     painter = painterResource("images/hide.png"),

@@ -1,3 +1,4 @@
+import TaskManager.taskTransform
 import androidx.compose.desktop.ui.tooling.preview.Preview
 import androidx.compose.foundation.*
 import androidx.compose.foundation.gestures.Orientation
@@ -7,8 +8,8 @@ import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.interaction.collectIsFocusedAsState
 import androidx.compose.foundation.interaction.collectIsPressedAsState
 import androidx.compose.foundation.layout.*
-import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.rememberLazyListState
+import androidx.compose.foundation.lazy.*
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -19,13 +20,17 @@ import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.input.pointer.PointerEventType
 import androidx.compose.ui.input.pointer.onPointerEvent
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.input.TextFieldValue
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.*
+import base.bean.AdbTask
 import base.resource.BottomAppBarTaskLog
+import base.resource.BottomAppBarTextColor
 import base.resource.TaskLogBarBg
 import java.text.SimpleDateFormat
-import java.util.logging.Logger
 
 @OptIn(ExperimentalMaterialApi::class)
 @Composable
@@ -33,7 +38,7 @@ fun Content(
     bottomSheetState: BottomSheetScaffoldState
 ) {
     val state = ContentPageController.pageFlow.collectAsState()
-    Row  {
+    Row {
         Column(modifier = Modifier.fillMaxHeight().width(175.dp).background(Color(0xfff4f4f4))) {
             TimeArea()
 
@@ -53,9 +58,9 @@ fun Content(
         }
 
         Box(modifier = Modifier.fillMaxSize()) {
-            when(state.value) {
+            when (state.value) {
                 is TaskPage -> TaskPageUi()
-                is MultitaskPage -> TaskLogPageUi()
+                is MultitaskPage -> MultitaskPageUi()
                 is TaskLoggerPage -> TaskLoggerPageUi()
                 is LogcatPage -> TaskLogPageUi()
                 is SettingPage -> TaskLogPageUi()
@@ -67,13 +72,25 @@ fun Content(
 @OptIn(ExperimentalUnitApi::class)
 @Composable
 fun TimeArea() {
-    Column (modifier = Modifier.fillMaxWidth().height(80.dp).background(Color(0xfff4f4f4))) {
+    Column(modifier = Modifier.fillMaxWidth().height(80.dp).background(Color(0xfff4f4f4))) {
         Box(modifier = Modifier.height(40.dp).fillMaxWidth().align(Alignment.CenterHorizontally)) {
-            Text("22:42", modifier = Modifier.align(Alignment.Center), fontSize = TextUnit(28.0F, TextUnitType.Sp), fontWeight = FontWeight.W100, fontFamily = FontFamily.Monospace)
+            Text(
+                "22:42",
+                modifier = Modifier.align(Alignment.Center),
+                fontSize = TextUnit(28.0F, TextUnitType.Sp),
+                fontWeight = FontWeight.W100,
+                fontFamily = FontFamily.Monospace
+            )
         }
 
         Box(modifier = Modifier.height(40.dp).fillMaxWidth().align(Alignment.CenterHorizontally)) {
-            Text(text = "2022/05/28", modifier = Modifier.align(Alignment.Center), fontSize = TextUnit(20.0F, TextUnitType.Sp), fontWeight = FontWeight.W100, fontFamily = FontFamily.Monospace)
+            Text(
+                text = "2022/05/28",
+                modifier = Modifier.align(Alignment.Center),
+                fontSize = TextUnit(20.0F, TextUnitType.Sp),
+                fontWeight = FontWeight.W100,
+                fontFamily = FontFamily.Monospace
+            )
         }
     }
 }
@@ -83,93 +100,252 @@ fun TimeArea() {
 fun Task(
     value: UiContentPage
 ) {
-    Box (modifier = Modifier.fillMaxWidth().height(70.dp).clickable {
-        ContentPageController.navigateToPageByIndex(TaskPage())
-    }.background(
-        if (value is TaskPage) Color.White else Color(0xfff4f4f4)
-    )) {
-        Text("Task", modifier = Modifier.align(Alignment.Center),fontSize = TextUnit(16.0F, TextUnitType.Sp), fontWeight = FontWeight.W100, fontFamily = FontFamily.Monospace)
+    Box(
+        modifier = Modifier.fillMaxWidth().height(70.dp).clickable {
+            ContentPageController.navigateToPageByIndex(TaskPage())
+        }.background(
+            if (value is TaskPage) Color.White else Color(0xfff4f4f4)
+        )
+    ) {
+        Text(
+            "Task",
+            modifier = Modifier.align(Alignment.Center),
+            fontSize = TextUnit(16.0F, TextUnitType.Sp),
+            fontWeight = FontWeight.W100,
+            fontFamily = FontFamily.Monospace
+        )
     }
 }
 
 @Composable
 fun TaskPageUi() {
-    Box (modifier = Modifier.fillMaxSize().background(Color.Blue)) {
+    Box(modifier = Modifier.fillMaxSize().background(Color.Blue)) {
     }
 }
 
 @OptIn(ExperimentalUnitApi::class)
 @Composable
 fun MultiTask(value: UiContentPage) {
-    Box (modifier = Modifier.fillMaxWidth().height(70.dp).clickable {
-        ContentPageController.navigateToPageByIndex(MultitaskPage())
-    }.background(
-        if (value is MultitaskPage) Color.White else Color(0xfff4f4f4)
-    )) {
-        Text("Multitasking", modifier = Modifier.align(Alignment.Center),fontSize = TextUnit(16.0F, TextUnitType.Sp), fontWeight = FontWeight.W100, fontFamily = FontFamily.Monospace)
+    Box(
+        modifier = Modifier.fillMaxWidth().height(70.dp).clickable {
+            ContentPageController.navigateToPageByIndex(MultitaskPage())
+        }.background(
+            if (value is MultitaskPage) Color.White else Color(0xfff4f4f4)
+        )
+    ) {
+        Text(
+            "Multitasking",
+            modifier = Modifier.align(Alignment.Center),
+            fontSize = TextUnit(16.0F, TextUnitType.Sp),
+            fontWeight = FontWeight.W100,
+            fontFamily = FontFamily.Monospace
+        )
     }
+}
+
+@OptIn(ExperimentalUnitApi::class, ExperimentalFoundationApi::class)
+@Composable
+fun MultitaskPageUi() {
+    var text by remember { mutableStateOf(TextFieldValue("")) }
+    var list by remember { mutableStateOf(emptyList<AdbTask>()) }
+    Column(modifier = Modifier.fillMaxSize()) {
+        Row(modifier = Modifier.fillMaxWidth().height(80.dp)) {
+            TextField(
+                value = text,
+                onValueChange = {
+                    text = it
+                },
+                placeholder = {
+                    Text(
+                        "Enter your multitasking, a single line represents one task.",
+                        fontSize = TextUnit(18.0f, TextUnitType.Sp)
+                    )
+                },
+                label = {
+                    Text("Multitasking", fontSize = TextUnit(18.0f, TextUnitType.Sp))
+                },
+                modifier = Modifier.height(56.dp).align(Alignment.CenterVertically).width(550.dp).padding(start = 25.dp)
+                    .border(width = 1.dp, color = Color(0xffd1d1d1), shape = RoundedCornerShape(10.dp)),
+                colors = TextFieldDefaults.textFieldColors(
+                    backgroundColor = Color.White,
+                    focusedIndicatorColor = Color.Transparent,
+                    unfocusedIndicatorColor = Color.Transparent,
+                    disabledIndicatorColor = Color.Transparent,
+                    focusedLabelColor = Color(0xff459bac)
+                ),
+                maxLines = Int.MAX_VALUE,
+                singleLine = false,
+                textStyle = TextStyle(fontSize = TextUnit(18.0f, TextUnitType.Sp))
+            )
+
+            IconButton(onClick = {
+                list = text.text.taskTransform()
+            }, modifier = Modifier.align(Alignment.CenterVertically).padding(start = 10.dp)) {
+                Icon(
+                    painter = painterResource("images/transform.png"),
+                    contentDescription = "转换",
+                    tint = Color(0xffd1d1d1)
+                )
+            }
+
+            IconButton(onClick = {
+
+            }, modifier = Modifier.align(Alignment.CenterVertically).padding(start = 10.dp)) {
+                Icon(
+                    painter = painterResource("images/run.png"),
+                    contentDescription = null,
+                    tint = Color(0xffd1d1d1)
+                )
+            }
+        }
+        Spacer(modifier = Modifier.fillMaxWidth().height(1.dp).background(Color(0xffd1d1d1)))
+
+        LazyVerticalGrid(
+            cells = GridCells.Fixed(4),
+            contentPadding = PaddingValues(
+                start = 12.dp,
+                top = 16.dp,
+                end = 12.dp,
+                bottom = 16.dp
+            ),
+            content = {
+                items(list.size) { index ->
+                    Card(
+                        backgroundColor = Color(0xfff4f4f4),
+                        modifier = Modifier.padding(4.dp).fillMaxWidth().height(160.dp),
+                        elevation = 8.dp,
+                    ) {
+                        Column {
+                            Text(
+                                text = "Task - ${index + 1}",
+                                fontSize = 18.sp,
+                                color = Color(0xff459bac),
+                                modifier = Modifier.fillMaxWidth().height(30.dp).padding(top = 8.dp),
+                                textAlign = TextAlign.Center,
+                                fontWeight = FontWeight.W400
+                            )
+
+                            Spacer(modifier = Modifier.fillMaxWidth().height(1.dp).background(Color(0xffd1d1d1)))
+
+                            Text(
+                                text = list[index].adbShellCommandStr,
+                                fontSize = 14.sp,
+                                color = Color(0xff333333),
+                                modifier = Modifier.fillMaxWidth().height(45.dp).padding(top = 4.dp),
+                                textAlign = TextAlign.Center
+                            )
+
+                            Spacer(modifier = Modifier.fillMaxWidth().height(1.dp).background(Color(0xffd1d1d1)))
+
+                            Text(
+                                text = "Result: ",
+                                color = Color(0xff010101),
+                                modifier = Modifier.fillMaxWidth().height(55.dp).padding(top = 4.dp),
+                                textAlign = TextAlign.Center
+                            )
+                            Spacer(modifier = Modifier.fillMaxWidth().height(1.dp).background(Color(0xffd1d1d1)))
+                            Row(modifier = Modifier.fillMaxSize()) {
+                                Text(
+                                    text = "state: ${list[index].adbShellState.description}",
+                                    modifier = Modifier.padding(start = 5.dp).align(Alignment.CenterVertically),
+                                    color =
+                                    Color(0xff0e932e),
+                                    fontSize = 12.sp,
+                                )
+                            }
+                        }
+                    }
+                }
+            }
+        )
+    }
+
 }
 
 @OptIn(ExperimentalUnitApi::class)
 @Composable
 fun TaskLogger(value: UiContentPage) {
-    Box (modifier = Modifier.fillMaxWidth().height(70.dp).clickable {
-        ContentPageController.navigateToPageByIndex(TaskLoggerPage())
-    }.background(
-        if (value is TaskLoggerPage) Color.White else Color(0xfff4f4f4)
-    )) {
-        Text("Task Log", modifier = Modifier.align(Alignment.Center),fontSize = TextUnit(16.0F, TextUnitType.Sp), fontWeight = FontWeight.W100, fontFamily = FontFamily.Monospace)
+    Box(
+        modifier = Modifier.fillMaxWidth().height(70.dp).clickable {
+            ContentPageController.navigateToPageByIndex(TaskLoggerPage())
+        }.background(
+            if (value is TaskLoggerPage) Color.White else Color(0xfff4f4f4)
+        )
+    ) {
+        Text(
+            "Task Log",
+            modifier = Modifier.align(Alignment.Center),
+            fontSize = TextUnit(16.0F, TextUnitType.Sp),
+            fontWeight = FontWeight.W100,
+            fontFamily = FontFamily.Monospace
+        )
     }
 }
 
 @Composable
 fun TaskLoggerPageUi() {
-    Box (modifier = Modifier.fillMaxSize().background(Color.Magenta)) {
+    Box(modifier = Modifier.fillMaxSize().background(Color.Magenta)) {
     }
 }
 
 @OptIn(ExperimentalUnitApi::class)
 @Composable
 fun Logcat(value: UiContentPage) {
-    Box (modifier = Modifier.fillMaxWidth().height(70.dp).clickable {
-        ContentPageController.navigateToPageByIndex(LogcatPage())
-    }.background(
-        if (value is LogcatPage) Color.White else Color(0xfff4f4f4)
-    )) {
-        Text("Logcat", modifier = Modifier.align(Alignment.Center),fontSize = TextUnit(16.0F, TextUnitType.Sp), fontWeight = FontWeight.W100, fontFamily = FontFamily.Monospace)
+    Box(
+        modifier = Modifier.fillMaxWidth().height(70.dp).clickable {
+            ContentPageController.navigateToPageByIndex(LogcatPage())
+        }.background(
+            if (value is LogcatPage) Color.White else Color(0xfff4f4f4)
+        )
+    ) {
+        Text(
+            "Logcat",
+            modifier = Modifier.align(Alignment.Center),
+            fontSize = TextUnit(16.0F, TextUnitType.Sp),
+            fontWeight = FontWeight.W100,
+            fontFamily = FontFamily.Monospace
+        )
     }
 }
 
 @OptIn(ExperimentalUnitApi::class)
 @Composable
 fun Setting(value: UiContentPage) {
-    Box (modifier = Modifier.fillMaxWidth().height(70.dp).clickable {
-        ContentPageController.navigateToPageByIndex(SettingPage())
-    }.background(
-        if (value is SettingPage) Color.White else Color(0xfff4f4f4)
-    )) {
-        Text("Setting", modifier = Modifier.align(Alignment.Center),fontSize = TextUnit(16.0F, TextUnitType.Sp), fontWeight = FontWeight.W100, fontFamily = FontFamily.Monospace)
+    Box(
+        modifier = Modifier.fillMaxWidth().height(70.dp).clickable {
+            ContentPageController.navigateToPageByIndex(SettingPage())
+        }.background(
+            if (value is SettingPage) Color.White else Color(0xfff4f4f4)
+        )
+    ) {
+        Text(
+            "Setting",
+            modifier = Modifier.align(Alignment.Center),
+            fontSize = TextUnit(16.0F, TextUnitType.Sp),
+            fontWeight = FontWeight.W100,
+            fontFamily = FontFamily.Monospace
+        )
     }
 }
 
 
 @Preview
 @Composable
-fun dropdownMenuTest(){
+fun dropdownMenuTest() {
     val expandState = remember {
         mutableStateOf(false)
     }
-        IconButton(
-            onClick = {
-                expandState.value = true
-            }) {
-            Text(text = "打开 DropdownMenu")
-        }
+    IconButton(
+        onClick = {
+            expandState.value = true
+        }) {
+        Text(text = "打开 DropdownMenu")
+    }
 }
 
 
 @Composable
-fun dropdownMenuItemTest(state: MutableState<Boolean>, icon: ImageVector, text:String){
+fun dropdownMenuItemTest(state: MutableState<Boolean>, icon: ImageVector, text: String) {
     val interactionSource = remember { MutableInteractionSource() }
     val pressState = interactionSource.collectIsPressedAsState()
     val focusState = interactionSource.collectIsFocusedAsState()
@@ -180,8 +356,16 @@ fun dropdownMenuItemTest(state: MutableState<Boolean>, icon: ImageVector, text:S
         enabled = true,
         interactionSource = interactionSource
     ) {
-        Icon(imageVector = icon, contentDescription = text,tint = if(pressState.value || focusState.value) Color.Red else Color.Black)
-        Text(text = text,modifier = Modifier.padding(start = 10.dp),color = if(pressState.value || focusState.value) Color.Red else Color.Black)
+        Icon(
+            imageVector = icon,
+            contentDescription = text,
+            tint = if (pressState.value || focusState.value) Color.Red else Color.Black
+        )
+        Text(
+            text = text,
+            modifier = Modifier.padding(start = 10.dp),
+            color = if (pressState.value || focusState.value) Color.Red else Color.Black
+        )
     }
 }
 
@@ -268,13 +452,18 @@ fun HomePageUi() {
 //            }
 
         Box(modifier = Modifier.align(Alignment.BottomCenter).fillMaxWidth().heightIn(min = 20.dp)) {
-            Spacer(modifier = Modifier.height(20.dp).fillMaxWidth().background(color = if (active) Color(0xffd1d1d1) else Color(0xfff4f4f4)).draggable(
-                orientation = Orientation.Vertical,
-                state = rememberDraggableState { delta ->
-                    offsetX -= delta
-                }
-            ).onPointerEvent(PointerEventType.Enter) { active = true }.onPointerEvent(PointerEventType.Exit) { active = false })
-            Box(modifier = Modifier.fillMaxWidth().height(offsetX.dp).background(Color.Yellow).align(Alignment.BottomCenter)) {
+            Spacer(modifier = Modifier.height(20.dp).fillMaxWidth()
+                .background(color = if (active) Color(0xffd1d1d1) else Color(0xfff4f4f4)).draggable(
+                    orientation = Orientation.Vertical,
+                    state = rememberDraggableState { delta ->
+                        offsetX -= delta
+                    }
+                ).onPointerEvent(PointerEventType.Enter) { active = true }
+                .onPointerEvent(PointerEventType.Exit) { active = false })
+            Box(
+                modifier = Modifier.fillMaxWidth().height(offsetX.dp).background(Color.Yellow)
+                    .align(Alignment.BottomCenter)
+            ) {
 
             }
         }
@@ -300,7 +489,7 @@ fun HomePageUi() {
 fun TT(
     bottomSheetState: BottomSheetScaffoldState
 ) {
-    var sheetPeekHeight  by remember { mutableStateOf(100.0) }
+    var sheetPeekHeight by remember { mutableStateOf(100.0) }
     BottomSheetScaffold(
         sheetPeekHeight = 0.dp,
         scaffoldState = bottomSheetState,

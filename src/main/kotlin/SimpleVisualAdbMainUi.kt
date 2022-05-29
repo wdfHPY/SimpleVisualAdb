@@ -27,7 +27,7 @@ fun main() = application {
     Window(
         onCloseRequest = ::exitApplication,
         title = "",
-        state = WindowState(size = DpSize(width = 1200.dp, height = 650.dp)),
+        state = WindowState(size = DpSize(width = 1070.dp, height = 650.dp)),
     ) {
         Scaffold(modifier = Modifier.fillMaxSize(),
             bottomBar = {

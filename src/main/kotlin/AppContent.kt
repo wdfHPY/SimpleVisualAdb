@@ -412,12 +412,36 @@ fun Logcat(value: UiContentPage) {
 @Composable
 fun LogcatUi() {
     val scope = rememberCoroutineScope()
-    var list = ProcessRunnerManager.logcatCacheStateFlow.collectAsState()
+    var list = LogcatManager.logcatCacheStateFlow.collectAsState()
+
+
     Column(modifier = Modifier.fillMaxSize()){
-        Button(onClick = {
-            ProcessRunnerManager.startLogcat()
-        }) {
-            Text("执行")
+        val state = rememberLazyListState()
+
+        Row {
+            Button(onClick = {
+                ProcessRunnerManager.startLogcat()
+            }) {
+                Text("执行")
+            }
+
+            Button(onClick = {
+                LogcatManager.stopLogcatOutput()
+            }) {
+                Text("暂停output")
+            }
+
+            Button(onClick = {
+                LogcatManager.startLogcatOutput()
+            }) {
+                Text("恢复output")
+            }
+
+            Button(onClick = {
+                LogcatManager.clearAllCacheData()
+            }) {
+                Text("清除缓存数据")
+            }
         }
         Button(onClick = {
 //            list.value = ProcessRunnerManager.logcatFlow.replayCache
@@ -425,11 +449,21 @@ fun LogcatUi() {
         }) {
             Text("打印所有cache")
         }
-//        Text("cache 中所有的元素为： ${size.value}")
-        LazyColumn {
-            items(list.value) {
-                Text(it)
+
+        Box () {
+            //        Text("cache 中所有的元素为： ${size.value}")
+            LazyColumn (state = state){
+                items(list.value) {
+                    Text(it)
+                }
             }
+
+            VerticalScrollbar(
+                modifier = Modifier.align(Alignment.CenterEnd).fillMaxHeight(),
+                adapter = rememberScrollbarAdapter(
+                    scrollState = state
+                )
+            )
         }
     }
 

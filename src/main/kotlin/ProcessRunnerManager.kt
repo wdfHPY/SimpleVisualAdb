@@ -87,12 +87,13 @@ object ProcessRunnerManager {
                 }
             }
 
-            scope.launch(Dispatchers.IO) {
-                while(isActive) {
-                    delay(300L)
-                    logcatCacheStateFlow.emit(logcatFlow.replayCache)
-                }
-            }
+//            scope.launch(Dispatchers.IO) {
+//                while(isActive) {
+//                    delay(300L)
+//                    logcatCacheStateFlow.emit(logcatFlow.replayCache)
+//                }
+//            }
+            LogcatManager.startLogcatOutput()
         }
     }
 }

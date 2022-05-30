@@ -4,12 +4,12 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.window.WindowDraggableArea
-import androidx.compose.material.Button
-import androidx.compose.material.Checkbox
-import androidx.compose.material.Surface
-import androidx.compose.material.Text
+import androidx.compose.material.*
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
+import androidx.compose.ui.ExperimentalComposeUiApi
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.Color
@@ -19,6 +19,8 @@ import androidx.compose.ui.window.*
 import base.impl.AdbExecuteImpl
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.runBlocking
+import java.awt.FileDialog
+import java.awt.Frame
 import java.io.ByteArrayOutputStream
 import java.io.File
 import java.io.FileInputStream
@@ -38,7 +40,8 @@ fun main() {
 //    val adbExecuteImpl = AdbExecuteImpl
 
 //    repairByteCode()
-    main5()
+//    main5()
+    FilePicker()
 }
 
 fun repairByteCode() {
@@ -215,3 +218,50 @@ fun main5() = application {
         }
     }
 }
+
+
+@OptIn(ExperimentalComposeUiApi::class)
+fun FilePicker() = application {
+    val state = rememberWindowState()
+    Window(
+        onCloseRequest = { state.isMinimized = true },
+    ) {
+
+        var text = remember { mutableStateOf("Hello, World!") }
+        var isFileChooserOpen =  remember { mutableStateOf(false) }
+
+        if (isFileChooserOpen.value) {
+            FileDialog(
+                onCloseRequest = {
+                    isFileChooserOpen.value = false
+                    println("Result $it")
+                }
+            )
+        }
+        MaterialTheme {
+            Button(onClick = {
+                isFileChooserOpen.value = true
+            }) {
+                Text(text = "选择")
+            }
+        }
+    }
+}
+@OptIn(ExperimentalComposeUiApi::class)
+@Composable
+private fun FileDialog(
+    parent: Frame? = null,
+    onCloseRequest: (result: String?) -> Unit
+) = AwtWindow(
+    create = {
+        object : FileDialog(parent, "保存运行结果", SAVE) {
+            override fun setVisible(value: Boolean) {
+                super.setVisible(value)
+                if (value) {
+                    onCloseRequest(directory + file)
+                }
+            }
+        }
+    },
+    dispose = FileDialog::dispose
+)

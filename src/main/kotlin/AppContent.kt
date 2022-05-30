@@ -26,14 +26,24 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.TextFieldValue
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.*
+import androidx.compose.ui.window.AwtWindow
 import base.bean.AdbTask
 import base.bean.CurrentTask
 import base.resource.BottomAppBarTaskLog
 import base.resource.BottomAppBarTextColor
 import base.resource.TaskLogBarBg
+import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.GlobalScope
+import kotlinx.coroutines.flow.collect
 import kotlinx.coroutines.launch
+import mu.KotlinLogging
+import java.awt.FileDialog
+import java.awt.Frame
+import java.io.File
 import java.text.SimpleDateFormat
+
+private val logger = KotlinLogging.logger {}
 
 @OptIn(ExperimentalMaterialApi::class)
 @Composable
@@ -155,6 +165,7 @@ fun MultitaskPageUi() {
 
     val multiTaskTask = ProcessRunnerManager.multiTaskFlow.collectAsState()
     val multiTaskStateTask = ProcessRunnerManager.multiTaskStateFlow.collectAsState()
+    var isFileChooserOpen =  remember { mutableStateOf(false) }
     Column(modifier = Modifier.fillMaxSize()) {
         Row(modifier = Modifier.fillMaxWidth().height(80.dp)) {
             TextField(
@@ -206,6 +217,27 @@ fun MultitaskPageUi() {
                     tint = Color(0xffd1d1d1)
                 )
             }
+
+            IconButton(onClick = {
+                isFileChooserOpen.value = true
+            }, modifier = Modifier.align(Alignment.CenterVertically).padding(start = 10.dp)) {
+                Icon(
+                    painter = painterResource("images/export.png"),
+                    contentDescription = null,
+                    tint = Color(0xffd1d1d1)
+                )
+            }
+
+            if (isFileChooserOpen.value) {
+                FileDialog(
+                    onCloseRequest = {
+                        isFileChooserOpen.value = false
+                        scope.launch(Dispatchers.Default) {
+                            exportAsFile(it)
+                        }
+                    }
+                )
+            }
         }
         Spacer(modifier = Modifier.fillMaxWidth().height(1.dp).background(Color(0xffd1d1d1)))
 
@@ -247,7 +279,11 @@ fun MultitaskPageUi() {
                             Spacer(modifier = Modifier.fillMaxWidth().height(1.dp).background(Color(0xffd1d1d1)))
                             Text(
                                 text = "Result: ${
-                                    multiTaskTask.value[list[index].adbShellCommandStr].toString()
+                                    if(multiTaskTask.value[list[index].adbShellCommandStr].isNullOrEmpty()) {
+                                        "暂无返回值"
+                                    } else {
+                                        multiTaskTask.value[list[index].adbShellCommandStr].toString()
+                                    }
                                 }",
                                 color = Color(0xff010101),
                                 modifier = Modifier.fillMaxWidth().height(55.dp).padding(top = 4.dp),
@@ -257,7 +293,7 @@ fun MultitaskPageUi() {
                             Row(modifier = Modifier.fillMaxSize()) {
                                 Text(
                                     text = "state: ${
-                                        multiTaskStateTask.value[list[index].adbShellCommandStr]?.description ?: "等待執行"
+                                        multiTaskStateTask.value[list[index].adbShellCommandStr]?.description ?: "等待执行"
                                     }",
                                     modifier = Modifier.padding(start = 5.dp).align(Alignment.CenterVertically),
                                     color =
@@ -274,9 +310,56 @@ fun MultitaskPageUi() {
 
 }
 
+@OptIn(ExperimentalComposeUiApi::class)
+@Composable
+private fun FileDialog(
+    parent: Frame? = null,
+    onCloseRequest: (result: String?) -> Unit
+) = AwtWindow(
+    create = {
+        object : FileDialog(parent, "保存运行结果", SAVE) {
+            override fun setVisible(value: Boolean) {
+                super.setVisible(value)
+                if (value) {
+                    onCloseRequest(directory + file)
+                }
+            }
+        }
+    },
+    dispose = FileDialog::dispose
+)
+
 fun runMultiTask(list: List<AdbTask>) {
     list.onEach {
         ProcessRunnerManager.startAutoEndProcess(it.adbShellCommandStr)
+    }
+}
+
+/**
+ * 作为文件导出
+ */
+fun exportAsFile(
+    saveFilePath: String?
+) {
+    logger.info { "saveFilePath $saveFilePath" }
+    if (saveFilePath == null) return
+    File(saveFilePath).bufferedWriter().use { writer ->
+        ProcessRunnerManager.multiTaskFlow.value.onEach { entry ->
+            writer.write(entry.key)
+            writer.newLine()
+            if (entry.value.isEmpty()) {
+                writer.write("   无输出结果")
+                writer.newLine()
+            } else {
+                entry.value.onEach {
+                    writer.write("   $it")
+                    writer.newLine()
+                }
+            }
+            writer.write("-------------------------")
+            writer.newLine()
+            writer.newLine()
+        }
     }
 }
 

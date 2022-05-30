@@ -75,7 +75,7 @@ fun Content(
                 is TaskPage -> TaskPageUi()
                 is MultitaskPage -> MultitaskPageUi()
                 is TaskLoggerPage -> TaskLoggerPageUi()
-                is LogcatPage -> TaskLogPageUi()
+                is LogcatPage -> LogcatUi()
                 is SettingPage -> TaskLogPageUi()
             }
         }
@@ -407,6 +407,32 @@ fun Logcat(value: UiContentPage) {
             fontFamily = FontFamily.Monospace
         )
     }
+}
+
+@Composable
+fun LogcatUi() {
+    val scope = rememberCoroutineScope()
+    var list = ProcessRunnerManager.logcatCacheStateFlow.collectAsState()
+    Column(modifier = Modifier.fillMaxSize()){
+        Button(onClick = {
+            ProcessRunnerManager.startLogcat()
+        }) {
+            Text("执行")
+        }
+        Button(onClick = {
+//            list.value = ProcessRunnerManager.logcatFlow.replayCache
+//            size.value = ProcessRunnerManager.logcatFlow.replayCache.size
+        }) {
+            Text("打印所有cache")
+        }
+//        Text("cache 中所有的元素为： ${size.value}")
+        LazyColumn {
+            items(list.value) {
+                Text(it)
+            }
+        }
+    }
+
 }
 
 @OptIn(ExperimentalUnitApi::class)

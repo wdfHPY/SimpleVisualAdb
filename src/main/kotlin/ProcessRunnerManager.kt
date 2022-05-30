@@ -2,8 +2,11 @@ import base.bean.CurrentTask
 import base.bean.ExecuteComplete
 import base.bean.ShellState
 import kotlinx.coroutines.*
+import kotlinx.coroutines.channels.BufferOverflow
 import kotlinx.coroutines.flow.*
+import java.io.BufferedReader
 import java.io.InputStream
+import java.io.InputStreamReader
 
 object ProcessRunnerManager {
     // adb process runner task limit is five second
@@ -22,6 +25,14 @@ object ProcessRunnerManager {
     private val _multiTaskStateFlow: MutableStateFlow<MutableMap<String, ShellState>> =  MutableStateFlow(mutableMapOf())
 
     val multiTaskStateFlow: StateFlow<MutableMap<String, ShellState>> get() = _multiTaskStateFlow
+
+    var logcatFlow: MutableSharedFlow<String> = MutableSharedFlow(
+        replay = 2000,
+        extraBufferCapacity = 1000,
+        onBufferOverflow = BufferOverflow.DROP_OLDEST
+    )
+
+    val logcatCacheStateFlow: MutableStateFlow<List<String>> = MutableStateFlow(emptyList())
 
     fun startAutoEndProcess(
         command: String
@@ -60,6 +71,30 @@ object ProcessRunnerManager {
             }
         }
     }
+
+    fun startLogcat() {
+        scope.launch {
+            scope.launch(Dispatchers.IO) {
+                process = Runtime.getRuntime().exec("adb logcat -b all")
+                process?.inputStream?.let { ins ->
+                    BufferedReader(InputStreamReader(ins)).run {
+                        forEachLine { line ->
+                            scope.launch {
+                                logcatFlow.emit(line)
+                            }
+                        }
+                    }
+                }
+            }
+
+            scope.launch(Dispatchers.IO) {
+                while(isActive) {
+                    delay(300L)
+                    logcatCacheStateFlow.emit(logcatFlow.replayCache)
+                }
+            }
+        }
+    }
 }
 
 fun main() {
@@ -70,3 +105,5 @@ fun main() {
 }
 
 fun InputStream.linesToFlow() = bufferedReader().lineSequence().toList()
+
+fun InputStream.linesAsFlow() = bufferedReader().lineSequence().toList().asFlow()

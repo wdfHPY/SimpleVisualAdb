@@ -31,9 +31,9 @@ fun main() = application {
     ) {
         Scaffold(modifier = Modifier.fillMaxSize(),
             bottomBar = {
-                AppBottomBar(
-                    scaffoldState.bottomSheetState
-                )
+//                AppBottomBar(
+//                    scaffoldState.bottomSheetState
+//                )
             },
         ) {
             Content(scaffoldState)

@@ -60,7 +60,7 @@ object LogcatManager {
         scope.launch {
             stopLogcatOutput()
             logcatCacheStateFlow.emit(emptyList())
-            delay(500L)
+            delay(1000L)
             startLogcatOutput()
         }
     }

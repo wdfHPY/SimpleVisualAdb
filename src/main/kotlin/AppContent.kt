@@ -70,7 +70,7 @@ fun Content(
             Spacer(modifier = Modifier.fillMaxWidth().height(1.dp).background(Color(0xffd1d1d1)))
         }
 
-        Box(modifier = Modifier.fillMaxSize()) {
+        Column (modifier = Modifier.fillMaxSize()) {
             when (state.value) {
                 is TaskPage -> TaskPageUi()
                 is MultitaskPage -> MultitaskPageUi()
@@ -78,6 +78,7 @@ fun Content(
                 is LogcatPage -> LogcatUi()
                 is SettingPage -> TaskLogPageUi()
             }
+            Box(modifier = Modifier.height(30.dp).fillMaxWidth().background(Color.Red))
         }
     }
 }
@@ -418,7 +419,9 @@ fun LogcatUi() {
     Column(modifier = Modifier.fillMaxSize()){
         val state = rememberLazyListState()
 
-        Row {
+        val state2 = rememberScrollState()
+
+        Row(modifier = Modifier.wrapContentWidth()) {
             Button(onClick = {
                 ProcessRunnerManager.startLogcat()
             }) {
@@ -454,7 +457,7 @@ fun LogcatUi() {
             //        Text("cache 中所有的元素为： ${size.value}")
             LazyColumn (state = state){
                 items(list.value) {
-                    Text(it)
+                    Text(text = it, modifier = Modifier.horizontalScroll(state = state2).width(40000.dp), maxLines = 1)
                 }
             }
 
@@ -464,7 +467,16 @@ fun LogcatUi() {
                     scrollState = state
                 )
             )
+            HorizontalScrollbar(
+                modifier = Modifier.align(Alignment.BottomStart).fillMaxWidth().height(20.dp),
+                adapter = rememberScrollbarAdapter(
+                    scrollState = state2
+                )
+            )
         }
+
+        Spacer(modifier = Modifier.height(30.dp))
+
     }
 
 }

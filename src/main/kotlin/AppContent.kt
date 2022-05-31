@@ -476,12 +476,14 @@ fun LogcatUi() {
         Box {
             LazyColumn (state = state){
                 items(list.value) {
-                    Text(
-                        text = it,
-                        modifier = Modifier.horizontalScroll(state = state2).width((lineMax.value * 10).dp).padding(top = 3.dp, bottom = 3.dp),
-                        maxLines = 1,
-                        fontSize = TextUnit(fontSize.value, TextUnitType.Sp), letterSpacing = TextUnit(0.3f, TextUnitType.Sp),fontFamily = FontFamily.Monospace
-                    )
+                    if (it.toString().contains("cit")) {
+                        Text(
+                            text = it.toString(),
+                            modifier = Modifier.horizontalScroll(state = state2).width((lineMax.value * 10).dp).padding(top = 3.dp, bottom = 3.dp),
+                            maxLines = 1,
+                            fontSize = TextUnit(fontSize.value, TextUnitType.Sp), letterSpacing = TextUnit(0.3f, TextUnitType.Sp),fontFamily = FontFamily.Monospace
+                        )
+                    }
                 }
             }
 

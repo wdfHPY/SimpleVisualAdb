@@ -75,7 +75,7 @@ object ProcessRunnerManager {
     fun startLogcat() {
         scope.launch {
             scope.launch(Dispatchers.IO) {
-                process = Runtime.getRuntime().exec("adb logcat -b all")
+                process = Runtime.getRuntime().exec("adb logcat -v threadtime -b all")
                 process?.inputStream?.let { ins ->
                     BufferedReader(InputStreamReader(ins)).run {
                         forEachLine { line ->

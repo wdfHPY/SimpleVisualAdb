@@ -1,18 +1,27 @@
 import ProcessRunnerManager.logcatFlow
 import androidx.compose.runtime.MutableState
+import base.bean.AdbProcess
 import base.bean.Logcat
 import base.bean.transform
 import kotlinx.coroutines.*
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 
+/**
+ * Logcat日志输出任务状态。
+ */
 sealed class LogcatOutputJobState
 
+//Logcat 输出尚未开始
 object LogcatNotStart : LogcatOutputJobState()
 
+//Logcat 输出中
 object LogcatOutputting : LogcatOutputJobState()
 
+//Logcat 输出暂停
 object LogcatPaused : LogcatOutputJobState()
+
+
 
 /**
  * Logcat 日志管理器
@@ -32,6 +41,12 @@ object LogcatManager {
 
     val logcatMaxCounterStateFlow: MutableStateFlow<Int> = MutableStateFlow(30)
 
+    var processJob: Job? = null
+
+    //系统ProcessFlow
+    private val mProcessFlow: MutableStateFlow<List<AdbProcess>> = MutableStateFlow(emptyList())
+
+    val processFlow: StateFlow<List<AdbProcess>> get() = mProcessFlow
 
     /**
      * 启动Logcat的输出。

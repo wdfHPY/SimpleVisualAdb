@@ -466,24 +466,16 @@ fun LogcatUi() {
                 Text("字体变小")
             }
         }
-        Button(onClick = {
-//            list.value = ProcessRunnerManager.logcatFlow.replayCache
-//            size.value = ProcessRunnerManager.logcatFlow.replayCache.size
-        }) {
-            Text("打印所有cache")
-        }
 
         Box {
             LazyColumn (state = state){
                 items(list.value) {
-                    if (it.toString().contains("cit")) {
-                        Text(
-                            text = it.toString(),
-                            modifier = Modifier.horizontalScroll(state = state2).width((lineMax.value * 10).dp).padding(top = 3.dp, bottom = 3.dp),
-                            maxLines = 1,
-                            fontSize = TextUnit(fontSize.value, TextUnitType.Sp), letterSpacing = TextUnit(0.3f, TextUnitType.Sp),fontFamily = FontFamily.Monospace
-                        )
-                    }
+                    Text(
+                        text = it.toString(),
+                        modifier = Modifier.horizontalScroll(state = state2).width((lineMax.value * 10).dp).padding(top = 3.dp, bottom = 3.dp),
+                        maxLines = 1,
+                        fontSize = TextUnit(fontSize.value, TextUnitType.Sp), letterSpacing = TextUnit(0.3f, TextUnitType.Sp),fontFamily = FontFamily.Monospace
+                    )
                 }
             }
 

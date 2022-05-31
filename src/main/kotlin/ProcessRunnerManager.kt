@@ -80,6 +80,9 @@ object ProcessRunnerManager {
                     BufferedReader(InputStreamReader(ins)).run {
                         forEachLine { line ->
                             scope.launch {
+                                if (line.length > LogcatManager.logcatMaxCounterStateFlow.value) {
+                                    LogcatManager.logcatMaxCounterStateFlow.emit(line.length)
+                                }
                                 logcatFlow.emit(line)
                             }
                         }

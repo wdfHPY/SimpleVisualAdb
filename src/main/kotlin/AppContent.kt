@@ -15,6 +15,7 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.ExperimentalComposeUiApi
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.focus.onFocusChanged
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.input.pointer.PointerEventType
@@ -32,11 +33,8 @@ import base.bean.CurrentTask
 import base.resource.BottomAppBarTaskLog
 import base.resource.BottomAppBarTextColor
 import base.resource.TaskLogBarBg
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.GlobalScope
+import kotlinx.coroutines.*
 import kotlinx.coroutines.flow.collect
-import kotlinx.coroutines.launch
 import mu.KotlinLogging
 import java.awt.FileDialog
 import java.awt.Frame
@@ -167,7 +165,7 @@ fun MultitaskPageUi() {
     val multiTaskTask = ProcessRunnerManager.multiTaskFlow.collectAsState()
     val multiTaskStateTask = ProcessRunnerManager.multiTaskStateFlow.collectAsState()
     var isFileChooserOpen =  remember { mutableStateOf(false) }
-    Column(modifier = Modifier.fillMaxSize()) {
+    Column(modifier = Modifier.fillMaxSize().absolutePadding(bottom = 30.dp)) {
         Row(modifier = Modifier.fillMaxWidth().height(80.dp)) {
             TextField(
                 value = text,
@@ -410,16 +408,26 @@ fun Logcat(value: UiContentPage) {
     }
 }
 
+@OptIn(ExperimentalUnitApi::class)
 @Composable
 fun LogcatUi() {
     val scope = rememberCoroutineScope()
     var list = LogcatManager.logcatCacheStateFlow.collectAsState()
+    var lineMax = LogcatManager.logcatMaxCounterStateFlow.collectAsState()
 
+    val fontSize = remember { mutableStateOf(11.0f) }
 
-    Column(modifier = Modifier.fillMaxSize()){
+    Column(modifier = Modifier.fillMaxSize().absolutePadding(bottom = 30.dp)){
         val state = rememberLazyListState()
 
         val state2 = rememberScrollState()
+
+//        scope.launch {
+//            while(isActive) {
+//                delay(100L)
+//                state.scrollToItem(list.value.size)
+//            }
+//        }
 
         Row(modifier = Modifier.wrapContentWidth()) {
             Button(onClick = {
@@ -445,6 +453,18 @@ fun LogcatUi() {
             }) {
                 Text("清除缓存数据")
             }
+
+            Button(onClick = {
+                fontSize.value = fontSize.value + 1
+            }) {
+                Text("字体变大")
+            }
+
+            Button(onClick = {
+                fontSize.value = fontSize.value - 1
+            }) {
+                Text("字体变小")
+            }
         }
         Button(onClick = {
 //            list.value = ProcessRunnerManager.logcatFlow.replayCache
@@ -453,11 +473,15 @@ fun LogcatUi() {
             Text("打印所有cache")
         }
 
-        Box () {
-            //        Text("cache 中所有的元素为： ${size.value}")
+        Box {
             LazyColumn (state = state){
                 items(list.value) {
-                    Text(text = it, modifier = Modifier.horizontalScroll(state = state2).width(40000.dp), maxLines = 1)
+                    Text(
+                        text = it,
+                        modifier = Modifier.horizontalScroll(state = state2).width((lineMax.value * 10).dp).padding(top = 3.dp, bottom = 3.dp),
+                        maxLines = 1,
+                        fontSize = TextUnit(fontSize.value, TextUnitType.Sp), letterSpacing = TextUnit(0.3f, TextUnitType.Sp),fontFamily = FontFamily.Monospace
+                    )
                 }
             }
 
@@ -465,12 +489,25 @@ fun LogcatUi() {
                 modifier = Modifier.align(Alignment.CenterEnd).fillMaxHeight(),
                 adapter = rememberScrollbarAdapter(
                     scrollState = state
+                ),
+                style = ScrollbarStyle(minimalHeight = 150.dp,
+                    thickness = 8.dp,
+                    shape = RoundedCornerShape(0.dp),
+                    hoverDurationMillis = 300,
+                    unhoverColor = Color.Black.copy(alpha = 0.12f),
+                    hoverColor = Color.Black.copy(alpha = 0.50f)
                 )
             )
             HorizontalScrollbar(
                 modifier = Modifier.align(Alignment.BottomStart).fillMaxWidth().height(20.dp),
                 adapter = rememberScrollbarAdapter(
                     scrollState = state2
+                ), style = ScrollbarStyle(minimalHeight = 150.dp,
+                    thickness = 8.dp,
+                    shape = RoundedCornerShape(0.dp),
+                    hoverDurationMillis = 300,
+                    unhoverColor = Color.Black.copy(alpha = 0.12f),
+                    hoverColor = Color.Black.copy(alpha = 0.50f)
                 )
             )
         }

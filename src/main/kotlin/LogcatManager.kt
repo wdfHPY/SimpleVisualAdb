@@ -1,4 +1,5 @@
 import ProcessRunnerManager.logcatFlow
+import androidx.compose.runtime.MutableState
 import kotlinx.coroutines.*
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -26,6 +27,8 @@ object LogcatManager {
 
     //logcat缓存流CacheFlow。
     val logcatCacheStateFlow: MutableStateFlow<List<String>> = MutableStateFlow(emptyList())
+
+    val logcatMaxCounterStateFlow: MutableStateFlow<Int> = MutableStateFlow(30)
 
 
     /**
@@ -62,6 +65,7 @@ object LogcatManager {
             logcatCacheStateFlow.emit(emptyList())
             delay(1000L)
             startLogcatOutput()
+            logcatMaxCounterStateFlow.emit(30)
         }
     }
 }

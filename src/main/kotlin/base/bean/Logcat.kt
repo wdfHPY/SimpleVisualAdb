@@ -1,5 +1,6 @@
 package base.bean
 
+import LogcatManager
 import base.bean.Logcat.Companion.COMPLETE_SIZE
 import base.bean.Logcat.Companion.DATE_FIELD
 import base.bean.Logcat.Companion.MESSAGE_FIELD
@@ -48,7 +49,12 @@ fun String.transform(): Logcat? {
                 tid = list[TID_FIELD],
                 priority = list[PRIORITY_FIELD],
                 tag = list[TAG_FIELD],
-                message = list.subList(MESSAGE_FIELD, list.size).joinToString(separator = " ")
+                message = list.subList(MESSAGE_FIELD, list.size).joinToString(separator = " "),
+                packageName = LogcatManager.processFlow.value.find {
+                    it.pid == list[PID_FIELD]
+                }.let {
+                    it?.packageName ?: "?"
+                }
             )
         } else {
             null

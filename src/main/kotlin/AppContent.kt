@@ -415,6 +415,9 @@ fun LogcatUi() {
     var list = LogcatManager.logcatCacheStateFlow.collectAsState()
     var lineMax = LogcatManager.logcatMaxCounterStateFlow.collectAsState()
 
+    var selectedIndex by remember { mutableStateOf(-1) }
+    val processList by LogcatManager.processFlow.collectAsState()
+
     val fontSize = remember { mutableStateOf(11.0f) }
 
     Column(modifier = Modifier.fillMaxSize().absolutePadding(bottom = 30.dp)){
@@ -470,12 +473,11 @@ fun LogcatUi() {
         Row(modifier = Modifier.width(150.dp)) {
             Box(modifier = Modifier.width(150.dp)) {
                 var expanded by remember { mutableStateOf(false) }
-                var selectedIndex by remember { mutableStateOf(0) }
-                val processList by LogcatManager.processFlow.collectAsState()
+
                 Button(onClick = {
                     expanded = true
                 }) {
-                    Text("弹出Menu")
+                    Text(if (selectedIndex == -1) "No Debuggable Process" else "${processList[selectedIndex].packageName}(${processList[selectedIndex].pid}")
                 }
 
                 DropdownMenu(
@@ -501,7 +503,9 @@ fun LogcatUi() {
 
         Box {
             LazyColumn (state = state){
-                items(list.value) {
+                items(list.value.filter {
+                    if (selectedIndex == -1) true else processList[selectedIndex].pid == it?.pid
+                }) {
                     Text(
                         text = it.toString(),
                         modifier = Modifier.horizontalScroll(state = state2).width((lineMax.value * 10).dp).padding(top = 3.dp, bottom = 3.dp),

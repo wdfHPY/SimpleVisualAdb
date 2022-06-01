@@ -1,11 +1,13 @@
 package base.impl
 
 import base.AdbExecute
-import base.bean.PullResultInfo
-import base.convertPullResult
+import base.bean.AdbProcess
+import base.bean.transformToProcess
 import base.getProcessInputStream
+import linesToFlow
 import java.io.BufferedReader
 import java.io.InputStreamReader
+
 
 object AdbExecuteImpl: AdbExecute {
 
@@ -33,6 +35,12 @@ object AdbExecuteImpl: AdbExecute {
             }
         }
         return state
+    }
+
+    override fun getProcessList(): List<AdbProcess?> {
+        return Runtime.getRuntime().exec("adb shell ps | grep u0").inputStream?.linesToFlow()?.map {
+            it.transformToProcess()
+        } ?: emptyList()
     }
 
 //    override fun pullDeviceFile(from: String, to: String): PullResultInfo {

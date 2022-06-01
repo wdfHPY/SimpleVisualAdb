@@ -3,9 +3,13 @@ import androidx.compose.runtime.MutableState
 import base.bean.AdbProcess
 import base.bean.Logcat
 import base.bean.transform
+import base.impl.AdbExecuteImpl
 import kotlinx.coroutines.*
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
+import mu.KotlinLogging
+
+private val logger = KotlinLogging.logger {}
 
 /**
  * Logcat日志输出任务状态。
@@ -44,9 +48,18 @@ object LogcatManager {
     var processJob: Job? = null
 
     //系统ProcessFlow
-    private val mProcessFlow: MutableStateFlow<List<AdbProcess>> = MutableStateFlow(emptyList())
+    private val mProcessFlow: MutableStateFlow<List<AdbProcess?>> = MutableStateFlow(emptyList())
 
-    val processFlow: StateFlow<List<AdbProcess>> get() = mProcessFlow
+    val processFlow: StateFlow<List<AdbProcess?>> get() = mProcessFlow
+
+    fun startProcessJob() {
+        processJob = scope.launch {
+            while (isActive) {
+                mProcessFlow.emit(AdbExecuteImpl.getProcessList())
+                delay(2500L)
+            }
+        }
+    }
 
     /**
      * 启动Logcat的输出。

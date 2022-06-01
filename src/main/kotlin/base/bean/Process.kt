@@ -1,5 +1,7 @@
 package base.bean
 
+import base.bean.AdbProcess.Companion.PID_FIELD
+
 /**
  *  Android ps 对应的进程信息。其他信息暂时不需要，等待产生需求的时候可以添加。
  *  @param pid 进程对应的 pid
@@ -10,5 +12,23 @@ package base.bean
 data class AdbProcess(
     val pid: String,
     val packageName: String,
-    val isThirdApp: Boolean
-)
+    val isThirdApp: Boolean = false
+) {
+    companion object {
+        const val PID_FIELD = 1
+    }
+}
+
+fun String.transformToProcess() : AdbProcess?{
+    println(this)
+    return this.split(" ").filter {
+        it.isNotEmpty()
+    }.let {
+        println(it)
+        if (it.size >= 2) {
+            AdbProcess(
+                it[PID_FIELD], it.last()
+            )
+        } else null
+    }
+}

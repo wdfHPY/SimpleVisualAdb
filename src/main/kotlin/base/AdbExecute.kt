@@ -1,5 +1,6 @@
 package base
 
+import base.bean.AdbProcess
 import base.bean.PullResultInfo
 
 interface AdbExecute {
@@ -19,4 +20,6 @@ interface AdbExecute {
      * @param to 主机的目标的路径。
      */
 //    fun pullDeviceFile(from: String, to: String): PullResultInfo
+
+    fun getProcessList(): List<AdbProcess?>
 }

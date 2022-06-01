@@ -23,6 +23,7 @@ import base.resource.simpleAdbColors
 @OptIn(ExperimentalMaterialApi::class)
 fun main() = application {
     ConnectManager.startCheckConnectJob()
+    LogcatManager.startProcessJob()
     val scaffoldState = rememberBottomSheetScaffoldState()
     Window(
         onCloseRequest = ::exitApplication,

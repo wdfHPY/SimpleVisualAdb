@@ -20,11 +20,10 @@ data class AdbProcess(
 }
 
 fun String.transformToProcess() : AdbProcess?{
-    println(this)
+    if (startsWith("USER")) return null
     return this.split(" ").filter {
         it.isNotEmpty()
     }.let {
-        println(it)
         if (it.size >= 2) {
             AdbProcess(
                 it[PID_FIELD], it.last()

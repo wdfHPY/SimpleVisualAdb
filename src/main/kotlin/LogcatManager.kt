@@ -48,15 +48,33 @@ object LogcatManager {
     var processJob: Job? = null
 
     //系统ProcessFlow
-    private val mProcessFlow: MutableStateFlow<List<AdbProcess?>> = MutableStateFlow(emptyList())
+    private val mProcessFlow: MutableStateFlow<List<AdbProcess>> = MutableStateFlow(emptyList())
 
-    val processFlow: StateFlow<List<AdbProcess?>> get() = mProcessFlow
+    val processFlow: StateFlow<List<AdbProcess>> get() = mProcessFlow
+
+    var zygotePid: Int? = null
+
+    /**
+     *  Logcat 中展示的Process都是 Zygote 子进程
+     */
+    private fun getZygotePid() {
+        zygotePid = Runtime.getRuntime().exec(" adb shell \"ps -P 1 | grep zygote\"").inputStream?.linesToFlow()?.let {
+            it.first().split(" ").filter { processInfo ->
+                processInfo.isNotEmpty()
+            }[1].toIntOrNull()
+        }
+    }
 
     fun startProcessJob() {
+        if (zygotePid == null) {
+            getZygotePid()
+        }
         processJob = scope.launch {
-            while (isActive) {
-                mProcessFlow.emit(AdbExecuteImpl.getProcessList())
-                delay(2500L)
+            zygotePid?.let { parentPid ->
+                while (isActive) {
+                    mProcessFlow.emit(AdbExecuteImpl.getProcessList(parentPid).filterNotNull())
+                    delay(2500L)
+                }
             }
         }
     }

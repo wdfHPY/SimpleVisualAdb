@@ -37,8 +37,10 @@ object AdbExecuteImpl: AdbExecute {
         return state
     }
 
-    override fun getProcessList(): List<AdbProcess?> {
-        return Runtime.getRuntime().exec("adb shell ps | grep u0").inputStream?.linesToFlow()?.map {
+    override fun getProcessList(
+        parentPid: Int
+    ): List<AdbProcess?> {
+        return Runtime.getRuntime().exec("adb shell \"ps -P $parentPid\"").inputStream?.linesToFlow()?.map {
             it.transformToProcess()
         } ?: emptyList()
     }

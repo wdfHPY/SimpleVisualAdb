@@ -21,5 +21,5 @@ interface AdbExecute {
      */
 //    fun pullDeviceFile(from: String, to: String): PullResultInfo
 
-    fun getProcessList(): List<AdbProcess?>
+    fun getProcessList(parentPid: Int): List<AdbProcess?>
 }

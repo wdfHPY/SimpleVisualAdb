@@ -467,6 +467,38 @@ fun LogcatUi() {
             }
         }
 
+        Row(modifier = Modifier.width(150.dp)) {
+            Box(modifier = Modifier.width(150.dp)) {
+                var expanded by remember { mutableStateOf(false) }
+                var selectedIndex by remember { mutableStateOf(0) }
+                val processList by LogcatManager.processFlow.collectAsState()
+                Button(onClick = {
+                    expanded = true
+                }) {
+                    Text("弹出Menu")
+                }
+
+                DropdownMenu(
+                    expanded = expanded,
+                    onDismissRequest = { expanded = false },
+                    modifier = Modifier.width(300.dp).height(200.dp).background(color = Color.White)
+                ) {
+                    processList.forEachIndexed { index, process ->
+                        logger.info { process }
+                        DropdownMenuItem(onClick = {
+                            selectedIndex = index
+                            expanded = false
+                        }) {
+                            Text(text = "${process.packageName}(${process.pid})", fontSize = TextUnit(
+                                12.0f, TextUnitType.Sp
+                            ), lineHeight = TextUnit(20.0f, TextUnitType.Sp), modifier = Modifier.height(20.dp)
+                            )
+                        }
+                    }
+                }
+            }
+        }
+
         Box {
             LazyColumn (state = state){
                 items(list.value) {

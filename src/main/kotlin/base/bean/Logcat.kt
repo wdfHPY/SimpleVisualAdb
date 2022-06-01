@@ -1,14 +1,19 @@
 package base.bean
 
 import LogcatManager
+import base.bean.Logcat.Companion.BASE_PRIORITY
 import base.bean.Logcat.Companion.COMPLETE_SIZE
 import base.bean.Logcat.Companion.DATE_FIELD
+import base.bean.Logcat.Companion.FIRST_PRIORITY
 import base.bean.Logcat.Companion.MESSAGE_FIELD
 import base.bean.Logcat.Companion.PID_FIELD
 import base.bean.Logcat.Companion.PRIORITY_FIELD
+import base.bean.Logcat.Companion.SECOND_PRIORITY
 import base.bean.Logcat.Companion.TAG_FIELD
+import base.bean.Logcat.Companion.THIRD_PRIORITY
 import base.bean.Logcat.Companion.TID_FIELD
 import base.bean.Logcat.Companion.TIME_FIELD
+import base.bean.Logcat.Companion.TOP_PRIORITY
 
 /**
  * logcat 的日志格式。
@@ -33,6 +38,12 @@ data class Logcat(
         const val TAG_FIELD = 5
         const val MESSAGE_FIELD = 6
         const val COMPLETE_SIZE = 6
+
+        val BASE_PRIORITY = listOf<String>("V", "D", "I", "W", "E")
+        val FIRST_PRIORITY = listOf<String>("D", "I", "W", "E")
+        val SECOND_PRIORITY = listOf<String>("I", "W", "E")
+        val THIRD_PRIORITY = listOf<String>("W", "E")
+        val TOP_PRIORITY = listOf<String>("E")
     }
 }
 
@@ -59,5 +70,21 @@ fun String.transform(): Logcat? {
         } else {
             null
         }
+    }
+}
+
+
+fun filterByPriority(
+    priority: String,
+    tag: String
+): Boolean {
+    return when (priority) {
+        "Verbose" -> tag in BASE_PRIORITY
+        "Debug" -> tag in FIRST_PRIORITY
+        "Info" -> tag in SECOND_PRIORITY
+        "Warn" -> tag in THIRD_PRIORITY
+        "Error" -> tag in TOP_PRIORITY
+        "Assert" -> tag in TOP_PRIORITY
+        else -> tag in BASE_PRIORITY
     }
 }

@@ -30,6 +30,7 @@ import androidx.compose.ui.unit.*
 import androidx.compose.ui.window.AwtWindow
 import base.bean.AdbTask
 import base.bean.CurrentTask
+import base.bean.filterByPriority
 import base.resource.BottomAppBarTaskLog
 import base.resource.BottomAppBarTextColor
 import base.resource.TaskLogBarBg
@@ -68,7 +69,7 @@ fun Content(
             Spacer(modifier = Modifier.fillMaxWidth().height(1.dp).background(Color(0xffd1d1d1)))
         }
 
-        Column (modifier = Modifier.fillMaxSize()) {
+        Column(modifier = Modifier.fillMaxSize()) {
             when (state.value) {
                 is TaskPage -> TaskPageUi()
                 is MultitaskPage -> MultitaskPageUi()
@@ -164,7 +165,7 @@ fun MultitaskPageUi() {
 
     val multiTaskTask = ProcessRunnerManager.multiTaskFlow.collectAsState()
     val multiTaskStateTask = ProcessRunnerManager.multiTaskStateFlow.collectAsState()
-    var isFileChooserOpen =  remember { mutableStateOf(false) }
+    var isFileChooserOpen = remember { mutableStateOf(false) }
     Column(modifier = Modifier.fillMaxSize().absolutePadding(bottom = 30.dp)) {
         Row(modifier = Modifier.fillMaxWidth().height(80.dp)) {
             TextField(
@@ -278,7 +279,7 @@ fun MultitaskPageUi() {
                             Spacer(modifier = Modifier.fillMaxWidth().height(1.dp).background(Color(0xffd1d1d1)))
                             Text(
                                 text = "Result: ${
-                                    if(multiTaskTask.value[list[index].adbShellCommandStr].isNullOrEmpty()) {
+                                    if (multiTaskTask.value[list[index].adbShellCommandStr].isNullOrEmpty()) {
                                         "暂无返回值"
                                     } else {
                                         multiTaskTask.value[list[index].adbShellCommandStr].toString()
@@ -418,9 +419,12 @@ fun LogcatUi() {
     var selectedIndex by remember { mutableStateOf(-1) }
     val processList by LogcatManager.processFlow.collectAsState()
 
+    var priorityIndex by remember { mutableStateOf(0) }
+    val priorityList = listOf("Verbose", "Debug", "Info", "Warn", "Error", "Assert")
+
     val fontSize = remember { mutableStateOf(11.0f) }
 
-    Column(modifier = Modifier.fillMaxSize().absolutePadding(bottom = 30.dp)){
+    Column(modifier = Modifier.fillMaxSize().absolutePadding(bottom = 30.dp)) {
         val state = rememberLazyListState()
 
         val state2 = rememberScrollState()
@@ -470,7 +474,7 @@ fun LogcatUi() {
             }
         }
 
-        Row(modifier = Modifier.width(150.dp)) {
+        Row(modifier = Modifier.fillMaxWidth()) {
             Box(modifier = Modifier.width(150.dp)) {
                 var expanded by remember { mutableStateOf(false) }
 
@@ -486,14 +490,44 @@ fun LogcatUi() {
                     modifier = Modifier.width(300.dp).height(200.dp).background(color = Color.White)
                 ) {
                     processList.forEachIndexed { index, process ->
-                        logger.info { process }
                         DropdownMenuItem(onClick = {
                             selectedIndex = index
                             expanded = false
                         }) {
-                            Text(text = "${process.packageName}(${process.pid})", fontSize = TextUnit(
-                                12.0f, TextUnitType.Sp
-                            ), lineHeight = TextUnit(20.0f, TextUnitType.Sp), modifier = Modifier.height(20.dp)
+                            Text(
+                                text = "${process.packageName}(${process.pid})", fontSize = TextUnit(
+                                    12.0f, TextUnitType.Sp
+                                ), lineHeight = TextUnit(20.0f, TextUnitType.Sp), modifier = Modifier.height(20.dp)
+                            )
+                        }
+                    }
+                }
+            }
+
+
+            Box(modifier = Modifier.width(150.dp)) {
+                var expanded2 by remember { mutableStateOf(false) }
+
+                Button(onClick = {
+                    expanded2 = true
+                }) {
+                    Text(if (priorityIndex == -1) "Verbose" else priorityList[priorityIndex])
+                }
+
+                DropdownMenu(
+                    expanded = expanded2,
+                    onDismissRequest = { expanded2 = false },
+                    modifier = Modifier.width(300.dp).height(200.dp).background(color = Color.White)
+                ) {
+                    priorityList.forEachIndexed { index, str ->
+                        DropdownMenuItem(onClick = {
+                            priorityIndex = index
+                            expanded2 = false
+                        }) {
+                            Text(
+                                text = str, fontSize = TextUnit(
+                                    12.0f, TextUnitType.Sp
+                                ), lineHeight = TextUnit(20.0f, TextUnitType.Sp), modifier = Modifier.height(20.dp)
                             )
                         }
                     }
@@ -502,15 +536,23 @@ fun LogcatUi() {
         }
 
         Box {
-            LazyColumn (state = state){
+            LazyColumn(state = state) {
                 items(list.value.filter {
-                    if (selectedIndex == -1) true else processList[selectedIndex].pid == it?.pid
+                    if (selectedIndex == -1)
+                        true
+                    else
+                        processList[selectedIndex].pid == it?.pid
+                }.filter {
+                    filterByPriority(priority = priorityList[priorityIndex], tag = it?.priority ?: "V")
                 }) {
                     Text(
                         text = it.toString(),
-                        modifier = Modifier.horizontalScroll(state = state2).width((lineMax.value * 10).dp).padding(top = 3.dp, bottom = 3.dp),
+                        modifier = Modifier.horizontalScroll(state = state2).width((lineMax.value * 10).dp)
+                            .padding(top = 3.dp, bottom = 3.dp),
                         maxLines = 1,
-                        fontSize = TextUnit(fontSize.value, TextUnitType.Sp), letterSpacing = TextUnit(0.3f, TextUnitType.Sp),fontFamily = FontFamily.Monospace
+                        fontSize = TextUnit(fontSize.value, TextUnitType.Sp),
+                        letterSpacing = TextUnit(0.3f, TextUnitType.Sp),
+                        fontFamily = FontFamily.Monospace
                     )
                 }
             }
@@ -520,7 +562,8 @@ fun LogcatUi() {
                 adapter = rememberScrollbarAdapter(
                     scrollState = state
                 ),
-                style = ScrollbarStyle(minimalHeight = 150.dp,
+                style = ScrollbarStyle(
+                    minimalHeight = 150.dp,
                     thickness = 8.dp,
                     shape = RoundedCornerShape(0.dp),
                     hoverDurationMillis = 300,
@@ -532,7 +575,8 @@ fun LogcatUi() {
                 modifier = Modifier.align(Alignment.BottomStart).fillMaxWidth().height(20.dp),
                 adapter = rememberScrollbarAdapter(
                     scrollState = state2
-                ), style = ScrollbarStyle(minimalHeight = 150.dp,
+                ), style = ScrollbarStyle(
+                    minimalHeight = 150.dp,
                     thickness = 8.dp,
                     shape = RoundedCornerShape(0.dp),
                     hoverDurationMillis = 300,

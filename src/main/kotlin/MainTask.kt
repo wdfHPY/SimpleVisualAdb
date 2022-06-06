@@ -1,5 +1,5 @@
-import androidx.compose.foundation.background
-import androidx.compose.foundation.border
+import AdbShellManager.updateDisplayAdbPathInfo
+import androidx.compose.foundation.*
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -8,10 +8,16 @@ import androidx.compose.material.*
 import androidx.compose.runtime.*
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.Alignment
+import androidx.compose.ui.ExperimentalComposeUiApi
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.scale
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.SolidColor
+import androidx.compose.ui.input.key.*
+import androidx.compose.ui.input.pointer.PointerEventType
+import androidx.compose.ui.input.pointer.isPrimaryPressed
+import androidx.compose.ui.input.pointer.isSecondaryPressed
+import androidx.compose.ui.input.pointer.onPointerEvent
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.input.TextFieldValue
@@ -24,11 +30,12 @@ import base.resource.BottomAppBarBgColor
 import base.resource.DeviceDirectory
 import base.resource.DeviceFile
 import mu.KotlinLogging
+import java.awt.SystemColor.text
 
 
 private val logger = KotlinLogging.logger {}
 
-@OptIn(ExperimentalUnitApi::class)
+@OptIn(ExperimentalUnitApi::class, ExperimentalComposeUiApi::class)
 @Composable
 fun TaskPageUi() {
 
@@ -45,7 +52,6 @@ fun TaskPageUi() {
         ) {
 
             Column(modifier = Modifier.fillMaxSize()) {
-
                 CustomTextField(
                     modifier = Modifier.height(25.dp).width(190.dp).border(
                         width = 1.dp, color = BottomAppBarBgColor, RoundedCornerShape(2.dp)
@@ -68,12 +74,30 @@ fun TaskPageUi() {
     }
 }
 
-@OptIn(ExperimentalUnitApi::class)
+@OptIn(ExperimentalUnitApi::class, ExperimentalFoundationApi::class, ExperimentalComposeUiApi::class)
 @Composable
 fun FilePathItem(
     file: DeviceFile?
 ) {
-    Row {
+    Row(
+        modifier = Modifier
+            .fillMaxWidth()
+            .onPointerEvent(PointerEventType.Press) {
+                if (it.buttons.isSecondaryPressed) {
+                    println("右击点击了")
+                }
+            }
+            .combinedClickable (
+            onDoubleClick = {
+                if (file?.isDirectory == true) {
+                    updateAdbShellByTextField(AdbShellManager.adbPath.value + file.name)
+                    updateDisplayAdbPathInfo(AdbShellManager.adbPath.value + file.name)
+                }
+            }
+        ) {
+
+        }
+    ) {
         Icon(
             painter = painterResource(
                 if (file?.isDirectory == true) "images/directory.png" else "images/fileicon.png"
@@ -99,6 +123,18 @@ fun updateAdbShellPath(
     }
 }
 
+fun updateAdbShellByTextField(
+    newExecuteCmd: String
+) {
+    if (newExecuteCmd.endsWith("/")) {
+        AdbShellManager.updateAdbPathInfo(newExecuteCmd)
+    } else {
+        AdbShellManager.updateAdbPathInfo("$newExecuteCmd/")
+    }
+
+}
+
+@OptIn(ExperimentalComposeUiApi::class)
 @Composable
 private fun CustomTextField(
     modifier: Modifier = Modifier,
@@ -107,16 +143,24 @@ private fun CustomTextField(
     placeholderText: String = "Path",
     fontSize: TextUnit = MaterialTheme.typography.body2.fontSize
 ) {
-    var text by rememberSaveable { mutableStateOf("") }
+    val text by AdbShellManager.adbDisplayPath.collectAsState()
     BasicTextField(modifier = modifier
         .background(
             MaterialTheme.colors.surface,
             MaterialTheme.shapes.small,
         )
-        .fillMaxWidth(),
+        .fillMaxWidth()
+        .onPreviewKeyEvent {
+            if (it.key == Key.Enter && it.type == KeyEventType.KeyDown) {
+                updateAdbShellByTextField(text)
+                true
+            } else {
+                false
+            }
+        },
         value = text,
         onValueChange = {
-            text = it
+            updateDisplayAdbPathInfo(it)
         },
         singleLine = true,
         cursorBrush = SolidColor(MaterialTheme.colors.primary),

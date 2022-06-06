@@ -12,11 +12,26 @@ object AdbShellManager {
 
     val adbPath: StateFlow<String> get() = mAdbPathFlow
 
+    private val mAdbDisplayPathFlow: MutableStateFlow<String> = MutableStateFlow("/")
+
+    val adbDisplayPath: StateFlow<String> get() = mAdbDisplayPathFlow
+
     private var updateAdbPathFileJob: Job? = null
 
     private val mPathsFlow: MutableStateFlow<List<DeviceFile?>> = MutableStateFlow(emptyList())
 
     val pathsFlow: StateFlow<List<DeviceFile?>> get() = mPathsFlow
+
+    /**
+     * 更新任务信息。
+     */
+    fun updateDisplayAdbPathInfo(
+        newAdbPath: String
+    ) {
+        scope.launch {
+            mAdbDisplayPathFlow.emit(newAdbPath)
+        }
+    }
 
     /**
      * 更新任务信息。

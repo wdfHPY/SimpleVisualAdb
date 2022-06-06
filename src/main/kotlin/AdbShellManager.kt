@@ -77,7 +77,6 @@ object AdbShellManager {
                     permission = array.first()
                 )
             }
-
         }
     }
 

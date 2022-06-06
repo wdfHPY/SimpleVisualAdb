@@ -4,6 +4,7 @@ import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.BasicTextField
+import androidx.compose.foundation.text.selection.SelectionContainer
 import androidx.compose.material.*
 import androidx.compose.runtime.*
 import androidx.compose.runtime.saveable.rememberSaveable
@@ -25,6 +26,7 @@ import androidx.compose.ui.unit.ExperimentalUnitApi
 import androidx.compose.ui.unit.TextUnit
 import androidx.compose.ui.unit.TextUnitType
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.window.singleWindowApplication
 import base.bean.DeviceFile
 import base.resource.BottomAppBarBgColor
 import base.resource.DeviceDirectory
@@ -79,25 +81,28 @@ fun TaskPageUi() {
 fun FilePathItem(
     file: DeviceFile?
 ) {
+    var expanded by remember { mutableStateOf(false) }
     Row(
         modifier = Modifier
             .fillMaxWidth()
             .onPointerEvent(PointerEventType.Press) {
                 if (it.buttons.isSecondaryPressed) {
                     println("右击点击了")
+                    expanded = true
                 }
             }
             .combinedClickable (
-            onDoubleClick = {
-                if (file?.isDirectory == true) {
-                    updateAdbShellByTextField(AdbShellManager.adbPath.value + file.name)
-                    updateDisplayAdbPathInfo(AdbShellManager.adbPath.value + file.name)
+                onDoubleClick = {
+                    if (file?.isDirectory == true) {
+                        updateAdbShellByTextField(AdbShellManager.adbPath.value + file.name)
+                        updateDisplayAdbPathInfo(AdbShellManager.adbPath.value + file.name)
+                    }
                 }
-            }
         ) {
 
         }
     ) {
+        val processList = listOf("Add", "Remove", "Rename")
         Icon(
             painter = painterResource(
                 if (file?.isDirectory == true) "images/directory.png" else "images/fileicon.png"
@@ -111,6 +116,24 @@ fun FilePathItem(
             modifier = Modifier.padding(start = 3.dp).align(Alignment.CenterVertically),
             fontSize = TextUnit(14.5f, TextUnitType.Sp)
         )
+
+        DropdownMenu(
+            expanded = expanded,
+            onDismissRequest = { expanded = false },
+            modifier = Modifier.width(200.dp).height(150.dp).background(color = Color.White)
+        ) {
+            processList.forEachIndexed { index, process ->
+                DropdownMenuItem(onClick = {
+                    expanded = false
+                }) {
+                    Text(
+                        text = "${process}", fontSize = TextUnit(
+                            12.0f, TextUnitType.Sp
+                        ), lineHeight = TextUnit(20.0f, TextUnitType.Sp), modifier = Modifier.height(20.dp)
+                    )
+                }
+            }
+        }
     }
 }
 
@@ -188,4 +211,24 @@ private fun CustomTextField(
             }
         }
     )
+}
+
+@OptIn(ExperimentalComposeUiApi::class, androidx.compose.foundation.ExperimentalFoundationApi::class)
+fun main() = singleWindowApplication(title = "Context menu") {
+    val text = remember { mutableStateOf("Hello!") }
+    Column {
+        ContextMenuArea(
+            items = {
+                listOf(
+                    ContextMenuItem("1") {/*do something here*/ },
+                    ContextMenuItem("2") {/*do something else*/ }
+                )
+            }
+        ) {
+
+            Box(modifier = Modifier.size(30.dp).background(color = Color.Green)) {
+
+            }
+        }
+    }
 }

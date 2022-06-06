@@ -130,11 +130,7 @@ fun Task(
     }
 }
 
-@Composable
-fun TaskPageUi() {
-    Box(modifier = Modifier.fillMaxSize().background(Color.Blue)) {
-    }
-}
+
 
 @OptIn(ExperimentalUnitApi::class)
 @Composable

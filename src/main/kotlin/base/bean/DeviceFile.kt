@@ -5,10 +5,7 @@ package base.bean
  * @param parentAbsPath 父绝对地址
  * @param subItem 子项列表。
  */
-data class AdbPath(
-    val parentAbsPath: String,
-    val subItem: List<DeviceFile>
-)
+
 
 /**
  * @param isDirectory 是否是文件夹

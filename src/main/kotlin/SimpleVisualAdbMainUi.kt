@@ -8,6 +8,7 @@ import androidx.compose.material.*
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.Color
@@ -19,12 +20,19 @@ import androidx.compose.ui.window.WindowState
 import androidx.compose.ui.window.application
 import base.resource.BottomAppBarBgColor
 import base.resource.simpleAdbColors
+import kotlinx.coroutines.launch
 
 @OptIn(ExperimentalMaterialApi::class)
 fun main() = application {
     ConnectManager.startCheckConnectJob()
     LogcatManager.startProcessJob()
     val scaffoldState = rememberBottomSheetScaffoldState()
+    val scope = rememberCoroutineScope()
+    scope.launch {
+        AdbShellManager.adbPath.collect {
+            AdbShellManager.updateDevicePath(it)
+        }
+    }
     Window(
         onCloseRequest = ::exitApplication,
         title = "",

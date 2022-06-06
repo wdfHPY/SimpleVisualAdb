@@ -1,6 +1,8 @@
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.Text
 import androidx.compose.material.TextField
@@ -17,8 +19,6 @@ import androidx.compose.ui.unit.ExperimentalUnitApi
 import androidx.compose.ui.unit.TextUnit
 import androidx.compose.ui.unit.TextUnitType
 import androidx.compose.ui.unit.dp
-import base.bean.AdbPath
-import base.bean.DeviceFile
 import base.getExecuteCommandProcess
 import mu.KotlinLogging
 
@@ -28,8 +28,14 @@ private val logger = KotlinLogging.logger {}
 @OptIn(ExperimentalUnitApi::class, ExperimentalComposeUiApi::class)
 @Composable
 fun TaskPageUi() {
+//    println(getCurrentPath())
     var text by remember { mutableStateOf(TextFieldValue("")) }
-    Box(modifier = Modifier.fillMaxSize()) {
+
+    val fileList by AdbShellManager.pathsFlow.collectAsState()
+
+
+    Column(modifier = Modifier.fillMaxSize()) {
+
         TextField(
             value = text,
             onValueChange = {
@@ -47,9 +53,7 @@ fun TaskPageUi() {
             modifier = Modifier.height(56.dp).width(550.dp).padding(start = 25.dp)
                 .border(width = 1.dp, color = Color(0xffd1d1d1), shape = RoundedCornerShape(10.dp)).onPreviewKeyEvent {
                     if (it.key == Key.Enter && it.type == KeyEventType.KeyDown) {
-                        println("拦截回车")
-                        getOutputStream(text.text)
-                        getInputStream()
+                        updateAdbShellPath(text.text)
                         true
                     } else {
                         false
@@ -66,28 +70,22 @@ fun TaskPageUi() {
             singleLine = false,
             textStyle = TextStyle(fontSize = TextUnit(18.0f, TextUnitType.Sp))
         )
+
+        LazyColumn {
+            items(fileList.size) {
+                if (it != 0) Text(text = fileList[it].toString())
+            }
+        }
     }
 }
 
-private var process: Process? = null
 
-fun getOutputStream(
-    cmd: String
+fun updateAdbShellPath(
+    executableCmd: String
 ) {
-    process = getExecuteCommandProcess("adb shell $cmd").getOrNull()
-    process?.outputStream?.write(cmd.toByteArray())
-}
-
-fun getInputStream() {
-    process?.inputStream?.bufferedReader()?.lines()?.forEach {
-        println(it)
+    if (executableCmd.startsWith("cd")) {
+        //更新
+        println("更新新的根目录 ${executableCmd.split(" ").last()}")
+        AdbShellManager.updateAdbPathInfo(executableCmd.split(" ").last())
     }
-}
-
-/**
- * 获取设备的文件列表。
- * @return 设备的文件列表
- */
-fun getCurrentPath(): AdbPath {
-    TODO()
 }

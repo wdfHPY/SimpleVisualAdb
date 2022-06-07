@@ -129,7 +129,7 @@ fun FilePathItem(
                             }
 
                             ParentFile -> {
-
+                                backToParentPath()
                             }
                             else -> {}
                         }
@@ -172,7 +172,13 @@ fun updateAdbShellByTextField(
     } else {
         AdbShellManager.updateAdbPathInfo("$newExecuteCmd/")
     }
+}
 
+fun backToParentPath() {
+    val array = AdbShellManager.adbDisplayPath.value.split("/").filter { it.isNotEmpty() }
+    if (array.isEmpty()) return
+    updateAdbShellByTextField("/${array.subList(0, array.size -1).joinToString("/")}")
+    updateDisplayAdbPathInfo("/${array.subList(0, array.size -1).joinToString("/")}")
 }
 
 @OptIn(ExperimentalComposeUiApi::class)

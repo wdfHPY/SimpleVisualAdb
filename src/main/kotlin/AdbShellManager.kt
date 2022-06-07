@@ -68,7 +68,7 @@ object AdbShellManager {
             }
             if (array.size <= 3)  null else {
                 DeviceFile(
-                    category = DeviceFile.judgeFileCategory(array.first()),
+                    category = DeviceFile.judgeFileCategory(array.first(), array[7]),
                     name = array[7],
                     createOrChangeTime = array[5] + array[6],
                     owner = array[2],

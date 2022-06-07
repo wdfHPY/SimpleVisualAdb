@@ -27,8 +27,7 @@ import androidx.compose.ui.unit.TextUnit
 import androidx.compose.ui.unit.TextUnitType
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.singleWindowApplication
-import base.bean.DeviceFile
-import base.bean.DirectorFile
+import base.bean.*
 import base.resource.BottomAppBarBgColor
 import base.resource.DeviceDirectory
 import base.resource.DeviceFile
@@ -84,9 +83,20 @@ fun FilePathItem(
         items = {
             listOf(
                 ContextMenuItem("Open") {
-                    if (file?.category is DirectorFile) {
-                        updateAdbShellByTextField(AdbShellManager.adbPath.value + file.name)
-                        updateDisplayAdbPathInfo(AdbShellManager.adbPath.value + file.name)
+                    when(file?.category) {
+                        NormalFile -> {
+                            updateAdbShellByTextField(AdbShellManager.adbPath.value + file.name)
+                            updateDisplayAdbPathInfo(AdbShellManager.adbPath.value + file.name)
+                        }
+
+                        CurrentFile -> {
+
+                        }
+
+                        ParentFile -> {
+
+                        }
+                        else -> {}
                     }
                 },
                 ContextMenuItem("Download") {
@@ -112,9 +122,16 @@ fun FilePathItem(
                 .fillMaxWidth()
                 .combinedClickable(
                     onDoubleClick = {
-                        if (file?.category is DirectorFile) {
-                            updateAdbShellByTextField(AdbShellManager.adbPath.value + file.name)
-                            updateDisplayAdbPathInfo(AdbShellManager.adbPath.value + file.name)
+                        when(file?.category) {
+                            NormalFile -> {
+                                updateAdbShellByTextField(AdbShellManager.adbPath.value + file.name)
+                                updateDisplayAdbPathInfo(AdbShellManager.adbPath.value + file.name)
+                            }
+
+                            ParentFile -> {
+
+                            }
+                            else -> {}
                         }
                     }
                 ) {
@@ -212,24 +229,4 @@ private fun CustomTextField(
             }
         }
     )
-}
-
-@OptIn(ExperimentalComposeUiApi::class, androidx.compose.foundation.ExperimentalFoundationApi::class)
-fun main() = singleWindowApplication(title = "Context menu") {
-    val text = remember { mutableStateOf("Hello!") }
-    Column {
-        ContextMenuArea(
-            items = {
-                listOf(
-                    ContextMenuItem("1") {/*do something here*/ },
-                    ContextMenuItem("2") {/*do something else*/ }
-                )
-            }
-        ) {
-
-            Box(modifier = Modifier.size(30.dp).background(color = Color.Green)) {
-
-            }
-        }
-    }
 }

@@ -21,7 +21,19 @@ object CharacterFile: FileCategory()
 /**
  * 目录文件（director file：d）
  */
-object DirectorFile: FileCategory()
+sealed class DirectorFile: FileCategory()
+
+/**
+ * 代表当前目录
+ */
+object CurrentFile :DirectorFile()
+
+/**
+ * 代表上级目录
+ */
+object ParentFile: DirectorFile()
+
+object NormalFile: DirectorFile()
 
 /**
  * 套接字文件（socket：s）
@@ -60,13 +72,18 @@ data class DeviceFile(
          * 目录的类别不仅仅是file和directory。暂时不区分那么多。
          */
         fun judgeFileCategory(
-            permission: String
+            permission: String,
+            fileName: String
         ): FileCategory {
             return  when(permission[0]) {
                 '-' -> RegularFile
                 'b' -> BlockFile
                 'c' -> CharacterFile
-                'd' -> DirectorFile
+                'd' -> when(fileName) {
+                    "." -> CurrentFile
+                    ".." -> ParentFile
+                    else -> NormalFile
+                }
                 's' -> SocketFile
                 'p' -> FifoFile
                 'l' -> SymbolicFile

@@ -2,6 +2,7 @@ import AdbShellManager.updateDisplayAdbPathInfo
 import androidx.compose.foundation.*
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.BasicTextField
 import androidx.compose.foundation.text.selection.SelectionContainer
@@ -45,25 +46,57 @@ fun TaskPageUi() {
 
     Row(modifier = Modifier.fillMaxSize()) {
         Column(
-            modifier = Modifier.width(200.dp).padding(top = 30.dp).border(
+            modifier = Modifier.width(200.dp).padding(top = 30.dp, bottom = 32.dp).border(
                 width = 1.dp,
                 color = BottomAppBarBgColor
             )
         ) {
+            val state = rememberLazyListState()
+
+            val state2 = rememberScrollState()
 
             Column(modifier = Modifier.fillMaxSize()) {
                 CustomTextField(
                     modifier = Modifier.height(25.dp).width(190.dp).border(
                         width = 1.dp, color = BottomAppBarBgColor, RoundedCornerShape(2.dp)
-                    ).padding(top = 0.1.dp).align(Alignment.CenterHorizontally)
+                    ).padding(top = 0.1.dp)
                 )
                 Text(text = "Name", modifier = Modifier.padding(start = 3.dp, top = 3.dp))
-                LazyColumn {
-                    items(fileList.size) {
-                        if (it != 0) {
-                            FilePathItem(fileList[it])
+                Box(modifier = Modifier.fillMaxSize()){
+                    LazyColumn(state = state) {
+                        items(fileList.size) {
+                            if (it != 0) {
+                                FilePathItem(fileList[it],state2)
+                            }
                         }
                     }
+                    VerticalScrollbar(
+                        modifier = Modifier.align(Alignment.CenterEnd).fillMaxHeight(),
+                        adapter = rememberScrollbarAdapter(
+                            scrollState = state
+                        ),
+                        style = ScrollbarStyle(
+                            minimalHeight = 150.dp,
+                            thickness = 8.dp,
+                            shape = RoundedCornerShape(0.dp),
+                            hoverDurationMillis = 300,
+                            unhoverColor = Color.Black.copy(alpha = 0.12f),
+                            hoverColor = Color.Black.copy(alpha = 0.50f)
+                        )
+                    )
+                    HorizontalScrollbar(
+                        modifier = Modifier.align(Alignment.BottomStart).fillMaxWidth().height(10.dp),
+                        adapter = rememberScrollbarAdapter(
+                            scrollState = state2
+                        ), style = ScrollbarStyle(
+                            minimalHeight = 150.dp,
+                            thickness = 8.dp,
+                            shape = RoundedCornerShape(0.dp),
+                            hoverDurationMillis = 300,
+                            unhoverColor = Color.Black.copy(alpha = 0.12f),
+                            hoverColor = Color.Black.copy(alpha = 0.50f)
+                        )
+                    )
                 }
             }
         }
@@ -77,7 +110,8 @@ fun TaskPageUi() {
 @OptIn(ExperimentalUnitApi::class, ExperimentalFoundationApi::class, ExperimentalComposeUiApi::class)
 @Composable
 fun FilePathItem(
-    file: DeviceFile?
+    file: DeviceFile?,
+    state: ScrollState
 ) {
     ContextMenuArea(
         items = {
@@ -119,7 +153,7 @@ fun FilePathItem(
     ) {
         Row(
             modifier = Modifier
-                .fillMaxWidth()
+                .horizontalScroll(state = state).width(550.dp)
                 .combinedClickable(
                     onDoubleClick = {
                         when(file?.category) {

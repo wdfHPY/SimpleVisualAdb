@@ -425,13 +425,6 @@ fun LogcatUi() {
 
         val state2 = rememberScrollState()
 
-//        scope.launch {
-//            while(isActive) {
-//                delay(100L)
-//                state.scrollToItem(list.value.size)
-//            }
-//        }
-
         Row(modifier = Modifier.wrapContentWidth()) {
             Button(onClick = {
                 ProcessRunnerManager.startLogcat()

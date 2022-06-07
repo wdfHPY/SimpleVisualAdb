@@ -28,6 +28,7 @@ import androidx.compose.ui.unit.TextUnitType
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.singleWindowApplication
 import base.bean.DeviceFile
+import base.bean.DirectorFile
 import base.resource.BottomAppBarBgColor
 import base.resource.DeviceDirectory
 import base.resource.DeviceFile
@@ -40,8 +41,6 @@ private val logger = KotlinLogging.logger {}
 @OptIn(ExperimentalUnitApi::class, ExperimentalComposeUiApi::class)
 @Composable
 fun TaskPageUi() {
-
-    var text by remember { mutableStateOf(TextFieldValue("ssssssssss")) }
 
     val fileList by AdbShellManager.pathsFlow.collectAsState()
 
@@ -81,58 +80,60 @@ fun TaskPageUi() {
 fun FilePathItem(
     file: DeviceFile?
 ) {
-    var expanded by remember { mutableStateOf(false) }
-    Row(
-        modifier = Modifier
-            .fillMaxWidth()
-            .onPointerEvent(PointerEventType.Press) {
-                if (it.buttons.isSecondaryPressed) {
-                    println("右击点击了")
-                    expanded = true
-                }
-            }
-            .combinedClickable (
-                onDoubleClick = {
-                    if (file?.isDirectory == true) {
+    ContextMenuArea(
+        items = {
+            listOf(
+                ContextMenuItem("Open") {
+                    if (file?.category is DirectorFile) {
                         updateAdbShellByTextField(AdbShellManager.adbPath.value + file.name)
                         updateDisplayAdbPathInfo(AdbShellManager.adbPath.value + file.name)
                     }
-                }
-        ) {
+                },
+                ContextMenuItem("Download") {
+                    ScreenRecord.startPullFileFromDevice(
+                        from = AdbShellManager.adbPath.value + file?.name,
+                        to = "."
+                    )
+                },
+                ContextMenuItem("Delete") {
 
+                },
+                ContextMenuItem("Rename") {
+
+                },
+                ContextMenuItem("Permission") {
+
+                },
+            )
         }
     ) {
-        val processList = listOf("Add", "Remove", "Rename")
-        Icon(
-            painter = painterResource(
-                if (file?.isDirectory == true) "images/directory.png" else "images/fileicon.png"
-            ),
-            contentDescription = null,
-            tint = if (file?.isDirectory == true) DeviceDirectory else DeviceFile,
-            modifier = Modifier.size(27.dp).padding(start = 10.dp)
-        )
-        Text(
-            text = file?.name ?: "",
-            modifier = Modifier.padding(start = 3.dp).align(Alignment.CenterVertically),
-            fontSize = TextUnit(14.5f, TextUnitType.Sp)
-        )
+        Row(
+            modifier = Modifier
+                .fillMaxWidth()
+                .combinedClickable(
+                    onDoubleClick = {
+                        if (file?.category is DirectorFile) {
+                            updateAdbShellByTextField(AdbShellManager.adbPath.value + file.name)
+                            updateDisplayAdbPathInfo(AdbShellManager.adbPath.value + file.name)
+                        }
+                    }
+                ) {
 
-        DropdownMenu(
-            expanded = expanded,
-            onDismissRequest = { expanded = false },
-            modifier = Modifier.width(200.dp).height(150.dp).background(color = Color.White)
-        ) {
-            processList.forEachIndexed { index, process ->
-                DropdownMenuItem(onClick = {
-                    expanded = false
-                }) {
-                    Text(
-                        text = "${process}", fontSize = TextUnit(
-                            12.0f, TextUnitType.Sp
-                        ), lineHeight = TextUnit(20.0f, TextUnitType.Sp), modifier = Modifier.height(20.dp)
-                    )
                 }
-            }
+        ) {
+            Icon(
+                painter = painterResource(
+                    if (file?.category is DirectorFile) "images/directory.png" else "images/fileicon.png"
+                ),
+                contentDescription = null,
+                tint = if (file?.category is DirectorFile) DeviceDirectory else DeviceFile,
+                modifier = Modifier.size(27.dp).padding(start = 10.dp)
+            )
+            Text(
+                text = file?.name ?: "",
+                modifier = Modifier.padding(start = 3.dp).align(Alignment.CenterVertically),
+                fontSize = TextUnit(14.5f, TextUnitType.Sp)
+            )
         }
     }
 }

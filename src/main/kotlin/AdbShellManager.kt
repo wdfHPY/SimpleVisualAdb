@@ -62,15 +62,14 @@ object AdbShellManager {
     }
 
     private fun List<String>.doMapToFileList(): List<DeviceFile?> {
-        //drwxr-xr-x  25 root   root       3880 2022-06-06 09:56 dev
         return this.map {
-            val array = it.split(" ").filter { it.isNotEmpty() }
+            val array = it.split(" ").filter {
+                it.isNotEmpty()
+            }
             if (array.size <= 3)  null else {
-                val isDirectory = DeviceFile.judgeIsDirectory(array.first())
                 DeviceFile(
-                    isDirectory = isDirectory,
-                    isFile = !isDirectory,
-                    name = array.last(),
+                    category = DeviceFile.judgeFileCategory(array.first()),
+                    name = array[7],
                     createOrChangeTime = array[5] + array[6],
                     owner = array[2],
                     ownerGroup = array[3],

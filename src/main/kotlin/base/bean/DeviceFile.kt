@@ -1,15 +1,45 @@
 package base.bean
 
 
+sealed class FileCategory
+
 /**
- * @param parentAbsPath 父绝对地址
- * @param subItem 子项列表。
+ * 普通文件（regular file：-）
  */
+object RegularFile: FileCategory()
+
+/**
+ * 块设备文件（block special file：b）
+ */
+object BlockFile: FileCategory()
+
+/**
+ * 字符设备文件（character special file：c）
+ */
+object CharacterFile: FileCategory()
+
+/**
+ * 目录文件（director file：d）
+ */
+object DirectorFile: FileCategory()
+
+/**
+ * 套接字文件（socket：s）
+ */
+object SocketFile: FileCategory()
+
+/**
+ * 管道文件（fifo：p）
+ */
+object FifoFile: FileCategory()
+
+/**
+ * 符号连接文件（symbolic link：l）
+ */
+object SymbolicFile: FileCategory()
 
 
 /**
- * @param isDirectory 是否是文件夹
- * @param isFile 是否是文件
  * @param name 文件的名称
  * @param createOrChangeTime 创建或者改变的时间
  * @param owner 文件/文件夹的拥有者
@@ -17,8 +47,7 @@ package base.bean
  * @param permission 文件的权限
  */
 data class DeviceFile(
-    val isDirectory: Boolean,
-    val isFile: Boolean,
+    val category: FileCategory,
     val name: String,
     val createOrChangeTime: String,
     val owner: String,
@@ -30,10 +59,19 @@ data class DeviceFile(
          * 判断是否是目录。这里仅仅只是测试。
          * 目录的类别不仅仅是file和directory。暂时不区分那么多。
          */
-        fun judgeIsDirectory(
+        fun judgeFileCategory(
             permission: String
-        ): Boolean {
-            return !permission.startsWith("-")
+        ): FileCategory {
+            return  when(permission[0]) {
+                '-' -> RegularFile
+                'b' -> BlockFile
+                'c' -> CharacterFile
+                'd' -> DirectorFile
+                's' -> SocketFile
+                'p' -> FifoFile
+                'l' -> SymbolicFile
+                else -> RegularFile
+            }
         }
     }
 }

@@ -76,7 +76,7 @@ object ScreenRecord {
         }
     }
 
-    private fun startPullFileFromDevice(from: String , to: String) {
+    fun startPullFileFromDevice(from: String , to: String) {
         val builder = StringBuilder()
         pullFileProcess = kotlin.runCatching {
             TaskManager.updateTaskInfo("adb pull $from $to")

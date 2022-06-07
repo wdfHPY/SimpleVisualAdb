@@ -19,6 +19,8 @@ val TaskLogBarBg = Color(0xffe2e6ec)
 val DeviceDirectory = Color(0xffffca27)
 val DeviceFile = Color(0xff1a2b2f)
 
+val BackParentFile = Color(0xffcaae56)
+
 fun simpleAdbColors(
     primary: Color = Color.White,
     primaryVariant: Color = BottomAppBarBgColor,

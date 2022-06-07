@@ -161,7 +161,7 @@ fun MultitaskPageUi() {
 
     val multiTaskTask = ProcessRunnerManager.multiTaskFlow.collectAsState()
     val multiTaskStateTask = ProcessRunnerManager.multiTaskStateFlow.collectAsState()
-    var isFileChooserOpen = remember { mutableStateOf(false) }
+    val isFileChooserOpen = remember { mutableStateOf(false) }
     Column(modifier = Modifier.fillMaxSize().absolutePadding(bottom = 30.dp)) {
         Row(modifier = Modifier.fillMaxWidth().height(80.dp)) {
             TextField(

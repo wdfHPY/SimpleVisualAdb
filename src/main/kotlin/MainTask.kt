@@ -27,30 +27,54 @@ import androidx.compose.ui.unit.ExperimentalUnitApi
 import androidx.compose.ui.unit.TextUnit
 import androidx.compose.ui.unit.TextUnitType
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.window.AwtWindow
 import androidx.compose.ui.window.singleWindowApplication
 import base.bean.*
+import base.resource.BackParentFile
 import base.resource.BottomAppBarBgColor
 import base.resource.DeviceDirectory
 import base.resource.DeviceFile
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
 import mu.KotlinLogging
+import java.awt.FileDialog
+import java.awt.Frame
 import java.awt.SystemColor.text
+import javax.swing.JFileChooser
 
 
 private val logger = KotlinLogging.logger {}
+val f = JFileChooser()
 
 @OptIn(ExperimentalUnitApi::class, ExperimentalComposeUiApi::class)
 @Composable
 fun TaskPageUi() {
 
+    f.fileSelectionMode = JFileChooser.DIRECTORIES_ONLY
+
     val fileList by AdbShellManager.pathsFlow.collectAsState()
 
     Row(modifier = Modifier.fillMaxSize()) {
         Column(
-            modifier = Modifier.width(200.dp).padding(top = 30.dp, bottom = 32.dp).border(
+            modifier = Modifier.width(200.dp).padding(bottom = 32.dp).border(
                 width = 1.dp,
                 color = BottomAppBarBgColor
             )
         ) {
+
+            Row(modifier = Modifier.fillMaxWidth().height(25.dp)) {
+                IconButton(onClick = {
+                    backToParentPath()
+                }, modifier = Modifier.size(20.dp).align(Alignment.CenterVertically)) {
+                    Icon(
+                        painter = painterResource("images/returnParent.png"),
+                        contentDescription = null,
+                        tint = BackParentFile,
+                        modifier = Modifier.size(20.dp).padding(start = 5.dp)
+                    )
+                }
+            }
+
             val state = rememberLazyListState()
 
             val state2 = rememberScrollState()
@@ -59,10 +83,10 @@ fun TaskPageUi() {
                 CustomTextField(
                     modifier = Modifier.height(25.dp).width(190.dp).border(
                         width = 1.dp, color = BottomAppBarBgColor, RoundedCornerShape(2.dp)
-                    ).padding(top = 0.1.dp)
+                    ).padding(top = 0.1.dp).align(Alignment.CenterHorizontally)
                 )
-                Text(text = "Name", modifier = Modifier.padding(start = 3.dp, top = 3.dp))
-                Box(modifier = Modifier.fillMaxSize()){
+                Text(text = "Name", modifier = Modifier.padding(start = 3.dp, top = 5.dp))
+                Box(modifier = Modifier.fillMaxSize().padding(top = 5.dp)){
                     LazyColumn(state = state) {
                         items(fileList.size) {
                             if (it != 0) {
@@ -107,18 +131,20 @@ fun TaskPageUi() {
     }
 }
 
+
 @OptIn(ExperimentalUnitApi::class, ExperimentalFoundationApi::class, ExperimentalComposeUiApi::class)
 @Composable
 fun FilePathItem(
     file: DeviceFile?,
     state: ScrollState
 ) {
+    val scope = rememberCoroutineScope()
     ContextMenuArea(
         items = {
             listOf(
                 ContextMenuItem("Open") {
                     when(file?.category) {
-                        NormalFile -> {
+                        NormalFile, SymbolicFile -> {
                             updateAdbShellByTextField(AdbShellManager.adbPath.value + file.name)
                             updateDisplayAdbPathInfo(AdbShellManager.adbPath.value + file.name)
                         }
@@ -134,10 +160,16 @@ fun FilePathItem(
                     }
                 },
                 ContextMenuItem("Download") {
-                    ScreenRecord.startPullFileFromDevice(
-                        from = AdbShellManager.adbPath.value + file?.name,
-                        to = "."
-                    )
+                    val i = f.showSaveDialog(null)
+                    println(i)
+                    if (i == JFileChooser.APPROVE_OPTION ){
+                        scope.launch(Dispatchers.IO) {
+                            ScreenRecord.startPullFileFromDevice(
+                                from = AdbShellManager.adbPath.value + file?.name,
+                                to = f.selectedFile.absolutePath
+                            )
+                        }
+                    }
                 },
                 ContextMenuItem("Delete") {
 
@@ -157,7 +189,7 @@ fun FilePathItem(
                 .combinedClickable(
                     onDoubleClick = {
                         when(file?.category) {
-                            NormalFile -> {
+                            NormalFile, SymbolicFile -> {
                                 updateAdbShellByTextField(AdbShellManager.adbPath.value + file.name)
                                 updateDisplayAdbPathInfo(AdbShellManager.adbPath.value + file.name)
                             }
@@ -174,10 +206,18 @@ fun FilePathItem(
         ) {
             Icon(
                 painter = painterResource(
-                    if (file?.category is DirectorFile) "images/directory.png" else "images/fileicon.png"
+                    when(file?.category) {
+                        is DirectorFile -> "images/directory.png"
+                        is SymbolicFile -> "images/directory.png"
+                        else -> "images/fileicon.png"
+                    }
                 ),
                 contentDescription = null,
-                tint = if (file?.category is DirectorFile) DeviceDirectory else DeviceFile,
+                tint = when(file?.category) {
+                    is DirectorFile -> DeviceDirectory
+                    is SymbolicFile -> DeviceDirectory
+                    else -> DeviceFile
+                },
                 modifier = Modifier.size(27.dp).padding(start = 10.dp)
             )
             Text(

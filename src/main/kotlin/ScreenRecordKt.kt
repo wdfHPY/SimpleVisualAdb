@@ -77,7 +77,8 @@ object ScreenRecord {
     }
 
     fun startPullFileFromDevice(from: String , to: String) {
-        val builder = StringBuilder()
+        ToastManager.updateToastInfo("拉取文件中...")
+        ifPullingScreenFile = true
         pullFileProcess = kotlin.runCatching {
             TaskManager.updateTaskInfo("adb pull $from $to")
             Runtime.getRuntime().exec(
@@ -87,15 +88,6 @@ object ScreenRecord {
             }
         }.getOrNull()
 
-        pullFileProcess?.inputStream?.let { ins ->
-            ifPullingScreenFile = true
-            ToastManager.updateToastInfo("开始拉取文件")
-            BufferedReader(InputStreamReader(ins)).run {
-                forEachLine { line -> builder.appendLine(line) }
-            }
-        }
-
-        builder.toString().convertPullResult()
         pullFileProcess?.destroy()
         ToastManager.updateToastInfo("文件拉取完成")
         logger.info { "文件拉取完成" }

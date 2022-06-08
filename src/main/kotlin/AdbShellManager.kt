@@ -55,7 +55,13 @@ object AdbShellManager {
     suspend fun updateDevicePath(
         newPath: String
     ) {
-        mPathsFlow.emit(filterErrorFormatStr(getCurrentPath(newPath)).doMapToFileList())
+        val source = getCurrentPath(newPath)
+        println("是否为空" + source.isEmpty())
+        source.onEach {
+            println("元数据  $it")
+        }
+
+        mPathsFlow.emit(filterErrorFormatStr(source).doMapToFileList())
     }
 
     fun updateDeviceSelected(
@@ -74,7 +80,7 @@ object AdbShellManager {
     ): List<String> {
         return getExecuteCommandProcessNoBlock(
             "adb shell ls -al $path"
-        ).getOrNull()?.inputStream?.bufferedReader()?.readLines() ?: emptyList()
+        ).getOrThrow().inputStream?.bufferedReader()?.readLines() ?: emptyList()
     }
 
     private fun filterErrorFormatStr(

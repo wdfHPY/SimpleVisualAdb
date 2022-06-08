@@ -1,4 +1,5 @@
 import base.bean.DeviceFile
+import base.getExecuteCommandProcess
 import base.getExecuteCommandProcessNoBlock
 import kotlinx.coroutines.*
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -18,9 +19,16 @@ object AdbShellManager {
 
     private var updateAdbPathFileJob: Job? = null
 
-    private val mPathsFlow: MutableStateFlow<List<DeviceFile?>> = MutableStateFlow(emptyList())
+    private val mPathsFlow: MutableStateFlow<List<DeviceFile>> = MutableStateFlow(emptyList())
 
-    val pathsFlow: StateFlow<List<DeviceFile?>> get() = mPathsFlow
+    val pathsFlow: StateFlow<List<DeviceFile>> get() = mPathsFlow
+
+    /**
+     * 仅仅支持单选。
+     */
+    private val mSelectedFlow: MutableStateFlow<String> = MutableStateFlow("")
+
+    val selectedFlow: StateFlow<String> get() = mSelectedFlow
 
     /**
      * 更新任务信息。
@@ -47,7 +55,15 @@ object AdbShellManager {
     suspend fun updateDevicePath(
         newPath: String
     ) {
-        mPathsFlow.emit(getCurrentPath(newPath).doMapToFileList())
+        mPathsFlow.emit(filterErrorFormatStr(getCurrentPath(newPath)).doMapToFileList())
+    }
+
+    fun updateDeviceSelected(
+        fileName: String
+    ) {
+        scope.launch {
+            mSelectedFlow.emit(fileName)
+        }
     }
 
     /**
@@ -61,21 +77,31 @@ object AdbShellManager {
         ).getOrNull()?.inputStream?.bufferedReader()?.readLines() ?: emptyList()
     }
 
-    private fun List<String>.doMapToFileList(): List<DeviceFile?> {
+    private fun filterErrorFormatStr(
+        list: List<String>
+    ): List<String> {
+        return list.filter {
+            it.split(" ").filter { array ->
+                array.isNotEmpty() || array.contains("?")
+            }.size > 3
+        }
+    }
+
+    private fun List<String>.doMapToFileList(): List<DeviceFile> {
         return this.map {
             val array = it.split(" ").filter {
                 it.isNotEmpty()
             }
-            if (array.size <= 3)  null else {
-                DeviceFile(
-                    category = DeviceFile.judgeFileCategory(array.first(), array[7]),
-                    name = array[7],
-                    createOrChangeTime = array[5] + array[6],
-                    owner = array[2],
-                    ownerGroup = array[3],
-                    permission = array.first()
-                )
-            }
+            println(array)
+
+            DeviceFile(
+                category = DeviceFile.judgeFileCategory(array.first(), array[7]),
+                name = array[7],
+                createOrChangeTime = array[5] + array[6],
+                owner = array[2],
+                ownerGroup = array[3],
+                permission = array.first()
+            )
         }
     }
 

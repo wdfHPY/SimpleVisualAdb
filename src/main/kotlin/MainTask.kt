@@ -5,45 +5,26 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.BasicTextField
-import androidx.compose.foundation.text.selection.SelectionContainer
 import androidx.compose.material.*
 import androidx.compose.runtime.*
-import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.ExperimentalComposeUiApi
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.scale
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.SolidColor
 import androidx.compose.ui.input.key.*
-import androidx.compose.ui.input.pointer.PointerEventType
-import androidx.compose.ui.input.pointer.isPrimaryPressed
-import androidx.compose.ui.input.pointer.isSecondaryPressed
-import androidx.compose.ui.input.pointer.onPointerEvent
 import androidx.compose.ui.res.painterResource
-import androidx.compose.ui.text.TextStyle
-import androidx.compose.ui.text.input.TextFieldValue
 import androidx.compose.ui.unit.ExperimentalUnitApi
 import androidx.compose.ui.unit.TextUnit
 import androidx.compose.ui.unit.TextUnitType
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.window.AwtWindow
-import androidx.compose.ui.window.singleWindowApplication
 import base.bean.*
-import base.resource.BackParentFile
-import base.resource.BottomAppBarBgColor
-import base.resource.DeviceDirectory
-import base.resource.DeviceFile
+import base.resource.*
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import mu.KotlinLogging
-import java.awt.FileDialog
-import java.awt.Frame
-import java.awt.SystemColor.text
 import javax.swing.JFileChooser
 
-
-private val logger = KotlinLogging.logger {}
 val f = JFileChooser()
 
 @OptIn(ExperimentalUnitApi::class, ExperimentalComposeUiApi::class)
@@ -53,6 +34,8 @@ fun TaskPageUi() {
     f.fileSelectionMode = JFileChooser.DIRECTORIES_ONLY
 
     val fileList by AdbShellManager.pathsFlow.collectAsState()
+
+    val selectedList by AdbShellManager.selectedFlow.collectAsState()
 
     Row(modifier = Modifier.fillMaxSize()) {
         Column(
@@ -90,7 +73,13 @@ fun TaskPageUi() {
                     LazyColumn(state = state) {
                         items(fileList.size) {
                             if (it != 0) {
-                                FilePathItem(fileList[it],state2)
+                                FilePathItem(fileList[it], state2, if (fileList[it].name == selectedList) {
+                                    ItemSelected
+                                } else {
+                                    ItemUnSelected
+                                }) {
+                                    AdbShellManager.updateDeviceSelected(fileList[it].name)
+                                }
                             }
                         }
                     }
@@ -135,15 +124,17 @@ fun TaskPageUi() {
 @OptIn(ExperimentalUnitApi::class, ExperimentalFoundationApi::class, ExperimentalComposeUiApi::class)
 @Composable
 fun FilePathItem(
-    file: DeviceFile?,
-    state: ScrollState
+    file: DeviceFile,
+    state: ScrollState,
+    color: Color,
+    itemOnClick: () -> Unit
 ) {
     val scope = rememberCoroutineScope()
     ContextMenuArea(
         items = {
             listOf(
                 ContextMenuItem("Open") {
-                    when(file?.category) {
+                    when(file.category) {
                         NormalFile, SymbolicFile -> {
                             updateAdbShellByTextField(AdbShellManager.adbPath.value + file.name)
                             updateDisplayAdbPathInfo(AdbShellManager.adbPath.value + file.name)
@@ -161,11 +152,10 @@ fun FilePathItem(
                 },
                 ContextMenuItem("Download") {
                     val i = f.showSaveDialog(null)
-                    println(i)
                     if (i == JFileChooser.APPROVE_OPTION ){
                         scope.launch(Dispatchers.IO) {
                             ScreenRecord.startPullFileFromDevice(
-                                from = AdbShellManager.adbPath.value + file?.name,
+                                from = AdbShellManager.adbPath.value + file.name,
                                 to = f.selectedFile.absolutePath
                             )
                         }
@@ -186,9 +176,12 @@ fun FilePathItem(
         Row(
             modifier = Modifier
                 .horizontalScroll(state = state).width(550.dp)
+                .background(
+                    color = color
+                )
                 .combinedClickable(
                     onDoubleClick = {
-                        when(file?.category) {
+                        when(file.category) {
                             NormalFile, SymbolicFile -> {
                                 updateAdbShellByTextField(AdbShellManager.adbPath.value + file.name)
                                 updateDisplayAdbPathInfo(AdbShellManager.adbPath.value + file.name)
@@ -201,19 +194,19 @@ fun FilePathItem(
                         }
                     }
                 ) {
-
+                    itemOnClick.invoke()
                 }
         ) {
             Icon(
                 painter = painterResource(
-                    when(file?.category) {
+                    when(file.category) {
                         is DirectorFile -> "images/directory.png"
                         is SymbolicFile -> "images/directory.png"
                         else -> "images/fileicon.png"
                     }
                 ),
                 contentDescription = null,
-                tint = when(file?.category) {
+                tint = when(file.category) {
                     is DirectorFile -> DeviceDirectory
                     is SymbolicFile -> DeviceDirectory
                     else -> DeviceFile
@@ -221,7 +214,7 @@ fun FilePathItem(
                 modifier = Modifier.size(27.dp).padding(start = 10.dp)
             )
             Text(
-                text = file?.name ?: "",
+                text = file.name,
                 modifier = Modifier.padding(start = 3.dp).align(Alignment.CenterVertically),
                 fontSize = TextUnit(14.5f, TextUnitType.Sp)
             )

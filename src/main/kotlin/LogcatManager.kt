@@ -58,9 +58,11 @@ object LogcatManager {
      */
     private fun getZygotePid() {
         zygotePid = Runtime.getRuntime().exec(" adb shell \"ps -P 1 | grep zygote\"").inputStream?.linesToFlow()?.let {
-            it.first().split(" ").filter { processInfo ->
-                processInfo.isNotEmpty()
-            }[1].toIntOrNull()
+            if (it.isNotEmpty()) {
+                it.first().split(" ").filter { processInfo ->
+                    processInfo.isNotEmpty()
+                }[1].toIntOrNull()
+            } else null
         }
     }
 

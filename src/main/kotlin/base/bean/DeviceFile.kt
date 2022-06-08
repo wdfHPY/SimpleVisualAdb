@@ -64,7 +64,8 @@ data class DeviceFile(
     val createOrChangeTime: String,
     val owner: String,
     val ownerGroup: String,
-    val permission: String
+    val permission: String,
+    var isSelected: Boolean = false
 ) {
     companion object {
         /**

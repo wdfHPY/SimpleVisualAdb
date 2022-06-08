@@ -21,6 +21,11 @@ val DeviceFile = Color(0xff1a2b2f)
 
 val BackParentFile = Color(0xffcaae56)
 
+val ItemSelected = Color(0xffcce8ff)
+val ItemUnSelected = Color.White
+
+
+
 fun simpleAdbColors(
     primary: Color = Color.White,
     primaryVariant: Color = BottomAppBarBgColor,
